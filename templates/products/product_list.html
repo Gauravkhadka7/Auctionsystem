@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Browse Auctions — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading">
+    <div><div class="eyebrow">Catalog</div><h2>Browse Auctions</h2></div>
+  </div>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search lots...">
+    </div>
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select">
+        <option value="">Any status</option>
+        <option value="LIVE" {% if request.GET.status == "LIVE" %}selected{% endif %}>Live</option>
+        <option value="UPCOMING" {% if request.GET.status == "UPCOMING" %}selected{% endif %}>Upcoming</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="sort" class="form-select">
+        <option value="newest">Newest</option>
+        <option value="ending_soon" {% if request.GET.sort == "ending_soon" %}selected{% endif %}>Ending soon</option>
+        <option value="price_high" {% if request.GET.sort == "price_high" %}selected{% endif %}>Price: high to low</option>
+        <option value="price_low" {% if request.GET.sort == "price_low" %}selected{% endif %}>Price: low to high</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button class="btn btn-brass w-100" type="submit">Go</button>
+    </div>
+  </form>
+
+  <div class="row g-4">
+    {% for product in page_obj %}
+      <div class="col-sm-6 col-lg-3">{% include "products/_product_card.html" %}</div>
+    {% empty %}
+      <p class="text-cream-dim">No lots match your search.</p>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-4">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}<li class="page-item"><a class="page-link bg-panel" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>{% endif %}
+      <li class="page-item disabled"><span class="page-link bg-panel">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}<li class="page-item"><a class="page-link bg-panel" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>{% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

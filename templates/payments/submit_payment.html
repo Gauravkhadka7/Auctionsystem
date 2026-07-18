@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Make Payment — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+  <div class="card-panel p-4">
+    <h2 class="mb-1">Complete Your Payment</h2>
+    <p class="text-cream-dim mb-4">For "{{ winner.product.title }}" — amount due: <span class="text-brass">{{ winner.winning_price }}</span></p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button class="btn btn-brass mt-2" type="submit">Submit Payment</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

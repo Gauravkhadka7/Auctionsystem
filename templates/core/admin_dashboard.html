@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading">
+    <div><div class="eyebrow">Admin</div><h2>Admin Dashboard</h2></div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'categories:list' %}" class="btn btn-outline-cream">Manage Categories</a>
+      <a href="/django-admin/" class="btn btn-brass">Django Admin</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ total_sellers }}</div><div class="stat-label">Sellers</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ total_bidders }}</div><div class="stat-label">Bidders</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ total_products }}</div><div class="stat-label">Total Products</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ pending_approval_count }}</div><div class="stat-label">Pending Approvals</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ live_count }}</div><div class="stat-label">Live</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ upcoming_count }}</div><div class="stat-label">Upcoming</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ closed_count }}</div><div class="stat-label">Closed</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ total_winners }}</div><div class="stat-label">Total Winners</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">{{ total_revenue }}</div><div class="stat-label">Total Revenue</div></div></div>
+  </div>
+
+  <h5 class="mb-3">Top Categories</h5>
+  <div class="row g-3 mb-5">
+    {% for cat in top_categories %}
+      <div class="col-md-2 col-4"><div class="stat-tile text-center"><div class="stat-value" style="font-size:1.2rem;">{{ cat.num }}</div><div class="stat-label">{{ cat.name }}</div></div></div>
+    {% empty %}<p class="text-cream-dim">No categories yet.</p>{% endfor %}
+  </div>
+
+  <h5 class="mb-3">Recent Products <span class="text-cream-dim small">(approve/reject/feature via Django Admin &rarr; Products)</span></h5>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Title</th><th>Seller</th><th>Status</th><th>Price</th></tr></thead>
+      <tbody>
+      {% for product in recent_products %}
+        <tr>
+          <td><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></td>
+          <td>{{ product.seller.username }}</td>
+          <td>
+            {% if product.status == "LIVE" %}<span class="badge-status badge-live">Live</span>
+            {% elif product.status == "PENDING" %}<span class="badge-status badge-upcoming">Pending</span>
+            {% else %}<span class="badge-status badge-closed">{{ product.get_status_display }}</span>{% endif %}
+          </td>
+          <td class="text-brass">{{ product.current_price }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="4" class="text-cream-dim">No products yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

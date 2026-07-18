@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Winners — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading"><div><div class="eyebrow">Hall of fame</div><h2>Previous Winners</h2></div></div>
+  <div class="row g-4">
+    {% for winner in page_obj %}
+      <div class="col-md-4">
+        <div class="card-panel p-3 d-flex flex-row gap-3">
+          {% if winner.product.main_image %}<img src="{{ winner.product.main_image.url }}" style="width:64px;height:64px;object-fit:cover;border-radius:4px;">{% endif %}
+          <div>
+            <div class="lot-title" style="font-size:1rem;">{{ winner.product.title }}</div>
+            <div class="small text-cream-dim">{{ winner.bidder.first_name|default:winner.bidder.username }}</div>
+            <div class="text-brass">{{ winner.winning_price }}</div>
+            <div class="text-cream-dim small">{{ winner.created_at|date:"M d, Y" }}</div>
+          </div>
+        </div>
+      </div>
+    {% empty %}<p class="text-cream-dim">No winners yet.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

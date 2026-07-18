@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Winner Details — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+  <div class="card-panel p-4">
+    <h2 class="mb-1">{{ winner.product.title }}</h2>
+    <p class="text-cream-dim mb-4">Won by {{ winner.bidder.first_name|default:winner.bidder.username }} for <span class="text-brass">{{ winner.winning_price }}</span></p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6"><div class="stat-tile"><div class="stat-value" style="font-size:1rem;">{% if winner.is_payment_verified %}Verified{% else %}Pending{% endif %}</div><div class="stat-label">Payment status</div></div></div>
+      <div class="col-6"><div class="stat-tile"><div class="stat-value" style="font-size:1rem;">{% if winner.is_delivered %}Delivered{% else %}Pending{% endif %}</div><div class="stat-label">Delivery status</div></div></div>
+    </div>
+
+    {% if request.user == winner.bidder %}
+      <div class="d-flex gap-2 flex-wrap">
+        {% if not winner.is_verification_submitted %}
+          <a href="{% url 'winners:submit_verification' winner.pk %}" class="btn btn-outline-cream">Submit Verification Documents</a>
+        {% endif %}
+        {% if winner.is_verification_submitted and not winner.is_payment_verified %}
+          <a href="{% url 'payments:submit' winner.pk %}" class="btn btn-brass">Make Payment</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <hr style="border-color: var(--hairline);" class="my-4">
+    <h6>Bid History</h6>
+    <table class="table table-sm">
+      <thead><tr><th>Bidder</th><th>Amount</th><th>Time</th></tr></thead>
+      <tbody>
+      {% for bid in winner.product.bids.all %}
+        <tr><td>{{ bid.bidder.first_name|default:bid.bidder.username }}</td><td>{{ bid.amount }}</td><td class="text-cream-dim">{{ bid.created_at|date:"M d, H:i" }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

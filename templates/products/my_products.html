@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}My Products — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading">
+    <div><div class="eyebrow">Seller</div><h2>My Products</h2></div>
+    <a href="{% url 'products:add' %}" class="btn btn-brass">+ List a new item</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Product</th><th>Status</th><th>Current Bid</th><th>Auction Window</th><th></th></tr></thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></td>
+            <td>
+              {% if product.status == "LIVE" %}<span class="badge-status badge-live">Live</span>
+              {% elif product.status == "UPCOMING" %}<span class="badge-status badge-upcoming">Upcoming</span>
+              {% elif product.status == "PENDING" %}<span class="badge-status badge-closed">Pending Approval</span>
+              {% else %}<span class="badge-status badge-closed">{{ product.get_status_display }}</span>{% endif %}
+            </td>
+            <td class="text-brass">{{ product.current_price }}</td>
+            <td class="small text-cream-dim">{{ product.auction_start|date:"M d" }} &rarr; {{ product.auction_end|date:"M d" }}</td>
+            <td class="text-end">
+              {% if product.status != "LIVE" and product.status != "CLOSED" %}
+                <a href="{% url 'products:edit' product.slug %}" class="btn btn-sm btn-outline-cream">Edit</a>
+                <a href="{% url 'products:delete' product.slug %}" class="btn btn-sm btn-outline-cream" onclick="return confirm('Delete this product?');">Delete</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-cream-dim">You haven't listed anything yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

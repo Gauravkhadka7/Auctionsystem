@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My Winnings — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading"><div><div class="eyebrow">Bidder</div><h2>My Winnings</h2></div></div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Product</th><th>Winning Price</th><th>Payment</th><th>Delivery</th><th></th></tr></thead>
+      <tbody>
+      {% for win in wins %}
+        <tr>
+          <td><a href="{{ win.product.get_absolute_url }}">{{ win.product.title }}</a></td>
+          <td class="text-brass">{{ win.winning_price }}</td>
+          <td>{% if win.is_payment_verified %}<span class="badge-status badge-live">Verified</span>{% else %}<span class="badge-status badge-closed">Pending</span>{% endif %}</td>
+          <td>{% if win.is_delivered %}<span class="badge-status badge-live">Delivered</span>{% else %}<span class="badge-status badge-closed">Pending</span>{% endif %}</td>
+          <td class="text-end"><a href="{% url 'winners:detail' win.pk %}" class="btn btn-sm btn-outline-cream">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="5" class="text-cream-dim">You haven't won any auctions yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

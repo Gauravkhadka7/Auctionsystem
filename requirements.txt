@@ -1,0 +1,11 @@
+Django==6.0.7
+Pillow==12.3.0
+django-crispy-forms==2.6
+crispy-bootstrap5==2026.3
+
+# Uncomment if you switch DB_ENGINE=postgresql in your .env
+# psycopg2-binary==2.9.9
+
+# Uncomment if you want DRF-powered JSON endpoints in addition to the
+# server-rendered views (not required for the app to run)
+# djangorestframework==3.15.2

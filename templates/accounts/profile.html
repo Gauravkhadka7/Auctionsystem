@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}My Profile — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+  <div class="section-heading"><div><div class="eyebrow">Account</div><h2>My Profile</h2></div></div>
+  <div class="card-panel p-4">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button class="btn btn-brass mt-2" type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

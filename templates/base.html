@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AuctionHouse{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-auction sticky-top py-3">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'core:home' %}"><span class="brand-mark">Lot</span>House</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="border-color: var(--hairline)">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'products:list' %}?status=LIVE">Live</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'products:list' %}?status=UPCOMING">Upcoming</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'winners:list' %}">Winners</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:how_it_works' %}">How It Works</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+      </ul>
+      <ul class="navbar-nav align-items-lg-center gap-lg-2">
+        {% if user.is_authenticated %}
+          {% if user.is_seller %}
+            <li class="nav-item"><a class="btn btn-outline-cream btn-sm" href="{% url 'products:add' %}">+ List an item</a></li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-bell"></i>
+              {% if unread_notification_count %}
+                <span class="badge rounded-pill bg-danger" style="font-size:0.6rem; position:relative; top:-8px;">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 280px;">
+              {% for n in recent_notifications %}
+                <li><a class="dropdown-item small {% if not n.is_read %}fw-semibold{% endif %}" href="{% url 'notifications:open' n.pk %}">{{ n.message|truncatechars:60 }}</a></li>
+              {% empty %}
+                <li><span class="dropdown-item small text-cream-dim">No notifications yet.</span></li>
+              {% endfor %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item small" href="{% url 'notifications:list' %}">View all</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'core:dashboard_redirect' %}">Dashboard</a></li>
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">My Profile</a></li>
+              {% if user.is_bidder %}<li><a class="dropdown-item" href="{% url 'winners:my_wins' %}">My Winnings</a></li>{% endif %}
+              {% if user.is_seller %}<li><a class="dropdown-item" href="{% url 'products:my_products' %}">My Products</a></li>{% endif %}
+              <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">Change Password</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                  {% csrf_token %}
+                  <button class="dropdown-item" type="submit">Logout</button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-brass btn-sm" href="{% url 'accounts:register' %}">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-3">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer-auction mt-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <h6 class="mb-2"><span style="color: var(--brass)">Lot</span>House</h6>
+        <p class="text-cream-dim small mb-3">A transparent, blockchain-curious take on online auctions — built as a student portfolio project. Bid with confidence, sell with reach.</p>
+        <form method="post" action="{% url 'core:newsletter_signup' %}" class="d-flex gap-2">
+          {% csrf_token %}
+          <input type="email" name="email" class="form-control form-control-sm" placeholder="you@example.com" required>
+          <button class="btn btn-brass btn-sm text-nowrap" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div class="col-lg-2 col-6">
+        <h6>Explore</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'products:list' %}?status=LIVE">Live Auctions</a></li>
+          <li><a href="{% url 'products:list' %}?status=UPCOMING">Upcoming Auctions</a></li>
+          <li><a href="{% url 'winners:list' %}">Winners</a></li>
+          <li><a href="{% url 'core:how_it_works' %}">How It Works</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-6">
+        <h6>Company</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'core:about' %}">About Us</a></li>
+          <li><a href="{% url 'core:contact' %}">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-6">
+        <h6>Legal</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'core:terms' %}">Terms &amp; Conditions</a></li>
+          <li><a href="{% url 'core:privacy' %}">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-6">
+        <h6>Account</h6>
+        <ul class="list-unstyled small">
+          <li><a href="{% url 'accounts:login' %}">Login</a></li>
+          <li><a href="{% url 'accounts:register' %}">Register</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr style="border-color: var(--hairline);" class="my-4">
+    <p class="small mb-0 text-cream-dim">&copy; {% now "Y" %} LotHouse. Built with Django. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/countdown.js' %}"></script>
+<script src="{% static 'js/formset.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

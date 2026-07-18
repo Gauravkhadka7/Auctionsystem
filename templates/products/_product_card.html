@@ -1,0 +1,41 @@
+{% load static %}
+<a href="{{ product.get_absolute_url }}" class="text-decoration-none">
+  <div class="lot-ticket">
+    <span class="lot-number">LOT #{{ product.id }}</span>
+    <div class="lot-img-wrap">
+      {% if product.main_image %}
+        <img src="{{ product.main_image.url }}" alt="{{ product.title }}">
+      {% endif %}
+    </div>
+    <div class="lot-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        {% if product.status == "LIVE" %}
+          <span class="badge-status badge-live">Live</span>
+        {% elif product.status == "UPCOMING" %}
+          <span class="badge-status badge-upcoming">Upcoming</span>
+        {% else %}
+          <span class="badge-status badge-closed">Closed</span>
+        {% endif %}
+        <span class="text-cream-dim small">{{ product.category.name }}</span>
+      </div>
+      <div class="lot-title">{{ product.title }}</div>
+      <div class="lot-meta mb-2">by {{ product.seller.first_name|default:product.seller.username }}</div>
+
+      <div class="d-flex justify-content-between align-items-end">
+        <div>
+          <div class="lot-price-label">{% if product.status == "UPCOMING" %}Starting bid{% else %}Current bid{% endif %}</div>
+          <div class="lot-price">{{ product.current_price }}</div>
+        </div>
+        {% if product.status == "LIVE" %}
+          <div class="countdown-strip" data-countdown="{{ product.time_remaining_seconds }}">
+            <span class="unit" data-unit="d">00</span><span class="unit" data-unit="h">00</span><span class="unit" data-unit="m">00</span><span class="unit" data-unit="s">00</span>
+          </div>
+        {% elif product.status == "UPCOMING" %}
+          <div class="text-cream-dim small">starts {{ product.auction_start|date:"M d, H:i" }}</div>
+        {% else %}
+          <div class="text-cream-dim small">{{ product.total_bids }} bid{{ product.total_bids|pluralize }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</a>

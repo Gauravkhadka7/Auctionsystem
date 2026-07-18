@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Submit Verification — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+  <div class="card-panel p-4">
+    <h2 class="mb-1">Verify Your Identity</h2>
+    <p class="text-cream-dim mb-4">Required before we release payment instructions for "{{ winner.product.title }}".</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button class="btn btn-brass mt-2" type="submit">Submit for Review</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 760px;">
+  <div class="section-heading"><div><h2>{{ page_title }}</h2></div></div>
+  <div class="card-panel p-4">
+    {% if template_body == "about" %}
+      <p>LotHouse is a student-built online auction platform demonstrating a full bidding lifecycle: listing approval, live countdown bidding, automatic auction closing, winner selection, and payment/delivery tracking.</p>
+      <p class="text-cream-dim">Built with Django, Bootstrap 5, and vanilla JavaScript as a portfolio and coursework project.</p>
+    {% elif template_body == "how_it_works" %}
+      <ol class="text-cream-dim">
+        <li class="mb-2"><strong class="text-cream">Register</strong> as a bidder or seller and verify your email.</li>
+        <li class="mb-2"><strong class="text-cream">Sellers list items</strong> with a starting price, reserve price, and auction window; admins approve listings before they go live.</li>
+        <li class="mb-2"><strong class="text-cream">Bidders place bids</strong> in real time once the auction opens; every bid must beat the current price by at least the increment.</li>
+        <li class="mb-2"><strong class="text-cream">Auctions close automatically</strong> when the timer hits zero — the highest bidder (above reserve) is declared the winner.</li>
+        <li class="mb-2"><strong class="text-cream">Winners verify identity</strong> and submit payment; sellers arrange delivery once payment is confirmed.</li>
+      </ol>
+    {% elif template_body == "terms" %}
+      <p class="text-cream-dim">All bids are binding. Sellers are responsible for accurate item descriptions. LotHouse facilitates the auction process but is not a party to the transaction between buyer and seller. This is placeholder text for a coursework/portfolio project — replace with real terms before any production use.</p>
+    {% elif template_body == "privacy" %}
+      <p class="text-cream-dim">We store the account and verification information you provide to run the auction and payment-verification workflow. This is placeholder text for a coursework/portfolio project — replace with a real privacy policy before any production use.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

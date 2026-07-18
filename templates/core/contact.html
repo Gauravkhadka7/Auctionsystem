@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+  <div class="section-heading"><div><div class="eyebrow">We'd love to hear from you</div><h2>Contact Us</h2></div></div>
+  <div class="card-panel p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3"><label class="form-label">Name</label><input type="text" name="name" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Subject</label><input type="text" name="subject" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Message</label><textarea name="message" class="form-control" rows="4" required></textarea></div>
+      <button class="btn btn-brass" type="submit">Send Message</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Notifications — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 640px;">
+  <div class="section-heading"><div><div class="eyebrow">Inbox</div><h2>Notifications</h2></div></div>
+  {% for n in notifications %}
+    <a href="{{ n.link|default:'#' }}" class="d-block card-panel p-3 mb-2 text-decoration-none">
+      <div class="text-cream">{{ n.message }}</div>
+      <div class="text-cream-dim small">{{ n.created_at|date:"M d, Y H:i" }}</div>
+    </a>
+  {% empty %}<p class="text-cream-dim">No notifications yet.</p>{% endfor %}
+</div>
+{% endblock %}

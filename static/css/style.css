@@ -1,0 +1,250 @@
+:root {
+  --ink: #12161c;
+  --panel: #1b222c;
+  --panel-raised: #232c38;
+  --hairline: #333f4d;
+  --cream: #ede6d6;
+  --cream-dim: #b9b2a2;
+  --brass: #c9a227;
+  --brass-bright: #e0bc4a;
+  --brick: #b5432e;
+  --brick-bright: #d15843;
+  --green-live: #4f7a52;
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-body: "Inter", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 0.97rem;
+}
+
+h1, h2, h3, h4, .display-serif {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+a { color: var(--brass-bright); text-decoration: none; }
+a:hover { color: var(--brass); }
+
+.text-cream-dim { color: var(--cream-dim); }
+.bg-panel { background: var(--panel); }
+
+/* ---------------- Navbar ---------------- */
+.navbar-auction {
+  background: var(--ink);
+  border-bottom: 1px solid var(--hairline);
+}
+.navbar-auction .navbar-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--cream);
+  letter-spacing: 0.01em;
+}
+.navbar-auction .navbar-brand .brand-mark { color: var(--brass); }
+.navbar-auction .nav-link {
+  color: var(--cream-dim) !important;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.5rem 0.75rem !important;
+}
+.navbar-auction .nav-link:hover,
+.navbar-auction .nav-link.active { color: var(--brass-bright) !important; }
+.navbar-auction .dropdown-menu {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+}
+.navbar-auction .dropdown-item { color: var(--cream-dim); }
+.navbar-auction .dropdown-item:hover { background: var(--panel-raised); color: var(--brass-bright); }
+
+/* ---------------- Buttons ---------------- */
+.btn-brass {
+  background: var(--brass);
+  border: 1px solid var(--brass);
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.btn-brass:hover { background: var(--brass-bright); border-color: var(--brass-bright); color: var(--ink); }
+
+.btn-outline-cream {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  color: var(--cream);
+}
+.btn-outline-cream:hover { border-color: var(--brass); color: var(--brass-bright); }
+
+.btn-bid {
+  background: var(--brick);
+  border: 1px solid var(--brick);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.btn-bid:hover { background: var(--brick-bright); border-color: var(--brick-bright); color: #fff; }
+
+/* ---------------- Hero ---------------- */
+.hero-auction {
+  background:
+    radial-gradient(ellipse at top right, rgba(201,162,39,0.14), transparent 60%),
+    var(--ink);
+  border-bottom: 1px solid var(--hairline);
+  padding: 4.5rem 0 3.5rem;
+}
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  color: var(--brass);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+}
+.hero-auction h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); color: var(--cream); }
+
+/* ---------------- Lot Ticket Card (signature element) ---------------- */
+.lot-ticket {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  height: 100%;
+}
+.lot-ticket:hover { transform: translateY(-3px); border-color: var(--brass); }
+.lot-ticket .lot-number {
+  position: absolute;
+  top: 0; left: 0;
+  background: var(--ink);
+  color: var(--brass);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  border-bottom-right-radius: 4px;
+  border: 1px solid var(--hairline);
+  border-top: none; border-left: none;
+  z-index: 2;
+}
+.lot-ticket .lot-img-wrap {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--panel-raised);
+}
+.lot-ticket .lot-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.lot-ticket .lot-body { padding: 1rem 1.1rem 1.1rem; }
+.lot-ticket .lot-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--cream);
+  margin-bottom: 0.15rem;
+  line-height: 1.25;
+}
+.lot-ticket .lot-meta { font-size: 0.78rem; color: var(--cream-dim); }
+.lot-price {
+  font-family: var(--font-mono);
+  color: var(--brass-bright);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+.lot-price-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cream-dim); }
+
+/* status badges */
+.badge-status { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.3rem 0.55rem; }
+.badge-live { background: var(--brick); color: #fff; }
+.badge-live::before { content: "● "; }
+.badge-upcoming { background: var(--brass); color: var(--ink); }
+.badge-closed { background: var(--hairline); color: var(--cream-dim); }
+
+/* countdown */
+.countdown-strip {
+  font-family: var(--font-mono);
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--cream);
+}
+.countdown-strip .unit {
+  background: var(--panel-raised);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 0.15rem 0.4rem;
+  min-width: 2.4em;
+  text-align: center;
+}
+
+/* section headers */
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+.section-heading h2 { color: var(--cream); margin: 0; }
+.section-heading .eyebrow { font-family: var(--font-mono); color: var(--brass); font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; }
+
+/* cards / panels / forms */
+.card-panel {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+.form-control, .form-select {
+  background: var(--panel-raised);
+  border: 1px solid var(--hairline);
+  color: var(--cream);
+}
+.form-control:focus, .form-select:focus {
+  background: var(--panel-raised);
+  color: var(--cream);
+  border-color: var(--brass);
+  box-shadow: 0 0 0 0.2rem rgba(201,162,39,0.15);
+}
+.form-control::placeholder { color: var(--cream-dim); }
+label { color: var(--cream-dim); font-size: 0.85rem; }
+
+.table { color: var(--cream); }
+.table > :not(caption) > * > * { border-bottom-color: var(--hairline); background-color: transparent; }
+
+/* footer */
+.footer-auction {
+  background: var(--panel);
+  border-top: 1px solid var(--hairline);
+  color: var(--cream-dim);
+  padding: 3rem 0 1.5rem;
+  font-size: 0.88rem;
+}
+.footer-auction h6 { color: var(--cream); font-family: var(--font-display); }
+.footer-auction a { color: var(--cream-dim); }
+.footer-auction a:hover { color: var(--brass-bright); }
+
+/* misc */
+.stat-tile {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.stat-tile .stat-value { font-family: var(--font-mono); font-size: 1.6rem; color: var(--brass-bright); }
+.stat-tile .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cream-dim); }
+
+.sidebar-dash {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 1rem;
+}
+.sidebar-dash .nav-link { color: var(--cream-dim); padding: 0.5rem 0.7rem; border-radius: 4px; font-size: 0.9rem; }
+.sidebar-dash .nav-link:hover, .sidebar-dash .nav-link.active { background: var(--panel-raised); color: var(--brass-bright); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lot-ticket { transition: none; }
+}
