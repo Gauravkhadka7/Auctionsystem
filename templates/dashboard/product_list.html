@@ -1,0 +1,87 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="card-panel">
+  <div class="card-panel__head">
+    <form class="filter-bar flex-grow-1" method="get">
+      <input class="form-control form-control-sm" type="search" name="q" placeholder="Search title or description…" value="{{ query }}" style="min-width:180px;">
+      <select class="form-select form-select-sm" name="status" style="width:auto;">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="form-select form-select-sm" name="category" style="width:auto;">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if filters.category == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <input class="form-control form-control-sm" type="search" name="seller" placeholder="Seller username" value="{{ filters.seller }}" style="width:150px;">
+      <select class="form-select form-select-sm" name="sort" style="width:auto;">
+        <option value="newest" {% if filters.sort == "newest" or not filters.sort %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest</option>
+        <option value="price_high" {% if filters.sort == "price_high" %}selected{% endif %}>Price high</option>
+        <option value="price_low" {% if filters.sort == "price_low" %}selected{% endif %}>Price low</option>
+        <option value="ending_soon" {% if filters.sort == "ending_soon" %}selected{% endif %}>Ending soon</option>
+        <option value="most_bids" {% if filters.sort == "most_bids" %}selected{% endif %}>Most bids</option>
+      </select>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      <a class="btn btn-sm btn-outline-secondary" href=".">Reset</a>
+    </form>
+    {% if mode == "auctions" %}
+      <form method="post" action="{% url 'dashboard:auction_sync' %}" data-confirm="Run the auction lifecycle sync now?">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-primary text-nowrap"><i class="bi bi-arrow-repeat"></i> Sync lifecycle</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Listing</th><th>Seller</th><th>Status</th>
+          <th class="text-end">Start</th><th class="text-end">Current</th>
+          <th class="text-center">Bids</th><th>Schedule</th><th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in page_obj %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if product.main_image %}
+                  <img src="{{ product.main_image.url }}" alt="" class="table-thumb">
+                {% else %}
+                  <span class="table-thumb d-inline-flex align-items-center justify-content-center"><i class="bi bi-image text-muted-2"></i></span>
+                {% endif %}
+                <div>
+                  <a href="{% url 'dashboard:product_detail' product.pk %}" class="fw-semibold">{{ product.title|truncatechars:36 }}</a>
+                  <div class="text-muted-2 small">{{ product.category.name }}{% if product.is_featured %} · <i class="bi bi-star-fill text-warning"></i>{% endif %}</div>
+                </div>
+              </div>
+            </td>
+            <td class="small">{{ product.seller.username }}</td>
+            <td>{% include "dashboard/_status_badge.html" with status=product.status label=product.get_status_display %}</td>
+            <td class="text-end small">{{ product.starting_price|floatformat:2 }}</td>
+            <td class="text-end fw-semibold">{{ product.current_price|default:product.starting_price|floatformat:2 }}</td>
+            <td class="text-center">{{ product.bid_count }}</td>
+            <td class="small text-muted-2">
+              {{ product.auction_start|date:"M j, H:i" }}<br>{{ product.auction_end|date:"M j, H:i" }}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:product_detail' product.pk %}">Manage</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="empty-state"><i class="bi bi-box-seam"></i>No listings match your filters.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-panel__body pt-0">{% include "dashboard/_pagination.html" %}</div>
+</div>
+{% endblock %}

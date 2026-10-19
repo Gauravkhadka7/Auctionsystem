@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>Activity log</h2><span class="text-muted-2 small">Derived from record timestamps</span></div>
+      <div class="card-panel__body">
+        <ul class="activity-list">
+          {% for item in activity %}
+            <li class="activity-item">
+              <span class="activity-item__icon"><i class="bi {{ item.icon }}"></i></span>
+              <div>
+                <div class="activity-item__text">{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}</div>
+                <div class="activity-item__time">{{ item.ts|date:"M j, Y H:i" }} · {{ item.ts|naturaltime }}</div>
+              </div>
+            </li>
+          {% empty %}
+            <div class="empty-state"><i class="bi bi-activity"></i>No activity recorded yet.</div>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>My notifications</h2>{% if unread_count %}<span class="badge-soft is-red">{{ unread_count }} unread</span>{% endif %}</div>
+      <div class="card-panel__body">
+        <ul class="activity-list">
+          {% for n in notifications %}
+            <li class="activity-item">
+              <span class="activity-item__icon"><i class="bi {% if n.is_read %}bi-envelope-open{% else %}bi-envelope{% endif %}"></i></span>
+              <div>
+                <div class="activity-item__text">{{ n.message|truncatechars:80 }}</div>
+                <div class="activity-item__time">{{ n.created_at|naturaltime }}</div>
+              </div>
+            </li>
+          {% empty %}
+            <div class="empty-state"><i class="bi bi-bell"></i>No notifications.</div>
+          {% endfor %}
+        </ul>
+        <a class="btn btn-sm btn-outline-secondary w-100 mt-2" href="{% url 'notifications:list' %}">Open notifications</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

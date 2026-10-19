@@ -55,6 +55,23 @@ class RegisterForm(UserCreationForm):
         return user
 
 
+class ResendVerificationForm(forms.Form):
+    """Email-based resend form.
+
+    It never reveals whether the address belongs to a real account: the view
+    shows the same confirmation regardless of the lookup result.
+    """
+
+    email = forms.EmailField(
+        required=True,
+        label="Email address",
+        widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "autofocus": True}),
+    )
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
+
+
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150)
     last_name = forms.CharField(max_length=150)

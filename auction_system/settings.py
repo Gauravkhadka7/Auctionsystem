@@ -23,6 +23,10 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").sp
 # Applications
 # -------------------------------------------------------------------
 INSTALLED_APPS = [
+    # Provides the ASGI-capable runserver; must precede staticfiles.
+    "daphne",
+    "channels",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -37,6 +41,7 @@ INSTALLED_APPS = [
 
     # local apps
     "core",
+    "dashboard",
     "accounts",
     "categories",
     "products",
@@ -45,6 +50,7 @@ INSTALLED_APPS = [
     "winners",
     "payments",
     "notifications",
+    "watchlist",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +84,29 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "auction_system.wsgi.application"
+ASGI_APPLICATION = "auction_system.asgi.application"
+
+# -------------------------------------------------------------------
+# Channels (live auction updates over WebSocket)
+#
+# Uses an in-memory channel layer by default, which is fine for a single
+# dev/prod process. Set REDIS_URL to use Redis so updates fan out across
+# multiple workers/servers:
+#     REDIS_URL=redis://127.0.0.1:6379/0
+# The HTTP polling fallback keeps working even if this isn't configured.
+# -------------------------------------------------------------------
+REDIS_URL = os.environ.get("REDIS_URL", "")
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [REDIS_URL]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+    }
 
 # -------------------------------------------------------------------
 # Database
@@ -105,6 +134,11 @@ else:
 # Auth
 # -------------------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
+
+# Allow logging in with the username or the registered email address.
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailOrUsernameModelBackend",
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -145,9 +179,17 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # -------------------------------------------------------------------
 # Email (console backend by default; swap to SMTP via env vars)
+#
+# Local dev: nothing happens — messages are printed to the console.
+# Real mail:  set EMAIL_USE_SMTP=True (and the EMAIL_HOST_* / DEFAULT_FROM_EMAIL
+#             values), or set EMAIL_BACKEND explicitly. Credentials must come
+#             from the environment and are never hardcoded here.
 # -------------------------------------------------------------------
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+EMAIL_USE_SMTP = os.environ.get("EMAIL_USE_SMTP", "False") == "True"
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND") or (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if EMAIL_USE_SMTP
+    else "django.core.mail.backends.console.EmailBackend"
 )
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
@@ -155,6 +197,16 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@auctionsystem.local")
+
+# Absolute origin used to build verification links. When set, links never
+# depend on the incoming Host header. Leave blank to fall back to the request.
+SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "").rstrip("/")
+
+# Email verification lifetime / anti-abuse knobs (seconds).
+EMAIL_VERIFICATION_TIMEOUT = int(os.environ.get("EMAIL_VERIFICATION_TIMEOUT", 60 * 60 * 24))
+EMAIL_OTP_TIMEOUT = int(os.environ.get("EMAIL_OTP_TIMEOUT", 30 * 60))
+EMAIL_VERIFICATION_RESEND_COOLDOWN = int(os.environ.get("EMAIL_VERIFICATION_RESEND_COOLDOWN", 60))
+EMAIL_VERIFICATION_RESEND_MAX_PER_HOUR = int(os.environ.get("EMAIL_VERIFICATION_RESEND_MAX_PER_HOUR", 10))
 
 # -------------------------------------------------------------------
 # Auction business rules

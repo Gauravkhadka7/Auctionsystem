@@ -1,0 +1,208 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+{{ charts|json_script:"chartData" }}
+
+<div class="row g-3">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-card__icon"><i class="bi bi-people"></i></div>
+      <div>
+        <div class="stat-card__value">{{ stats.users.total|intcomma }}</div>
+        <div class="stat-card__label">Total Users</div>
+        <div class="stat-card__hint">{{ stats.users.sellers }} sellers · {{ stats.users.bidders }} bidders</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-card__icon is-blue"><i class="bi bi-box-seam"></i></div>
+      <div>
+        <div class="stat-card__value">{{ stats.products.total|intcomma }}</div>
+        <div class="stat-card__label">Auction Listings</div>
+        <div class="stat-card__hint">{{ stats.total_categories }} categories</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-card__icon is-green"><i class="bi bi-broadcast"></i></div>
+      <div>
+        <div class="stat-card__value">{{ stats.products.live|intcomma }}</div>
+        <div class="stat-card__label">Live Auctions</div>
+        <div class="stat-card__hint">{{ stats.products.upcoming }} upcoming</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-card__icon is-amber"><i class="bi bi-hammer"></i></div>
+      <div>
+        <div class="stat-card__value">{{ stats.total_bids|intcomma }}</div>
+        <div class="stat-card__label">Bids Placed</div>
+        <div class="stat-card__hint">{{ stats.winners.total }} winners recorded</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value text-warning">{{ stats.products.pending|intcomma }}</div>
+      <div class="stat-card__label">Pending Approvals</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value">{{ stats.products.closed|intcomma }}</div>
+      <div class="stat-card__label">Closed Auctions</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value">{{ stats.winners.pending_verification|intcomma }}</div>
+      <div class="stat-card__label">Pending Winner Verification</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value text-warning">{{ stats.payments.pending|intcomma }}</div>
+      <div class="stat-card__label">Pending Payments</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value text-success">{{ stats.payments.verified|intcomma }}</div>
+      <div class="stat-card__label">Verified Payments</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__value">{{ stats.winners.delivered|intcomma }}</div>
+      <div class="stat-card__label">Delivered</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-4">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__label">Winning bid value (gross)</div>
+      <div class="stat-card__value">{{ stats.winners.winning_value|default:0|floatformat:2|intcomma }}</div>
+      <hr class="my-2">
+      <div class="stat-card__label">Verified payment total</div>
+      <div class="stat-card__value text-success">{{ stats.payments.verified_total|default:0|floatformat:2|intcomma }}</div>
+      <hr class="my-2">
+      <div class="stat-card__label">Platform revenue</div>
+      <div class="text-muted-2 small"><i class="bi bi-info-circle"></i> Not tracked — the schema records no commission/fee field, so it isn't estimated here.</div>
+    </div></div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>New registrations <span class="text-muted-2 fw-normal">· last 30 days</span></h2></div>
+      <div class="card-panel__body"><div class="chart-box"><canvas data-chart="registrationTrend"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-8">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Bids placed <span class="text-muted-2 fw-normal">· last 30 days</span></h2></div>
+      <div class="card-panel__body"><div class="chart-box"><canvas data-chart="bidsTrend"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Auctions by status</h2></div>
+      <div class="card-panel__body"><div class="chart-box chart-sm"><canvas data-chart="auctionsByStatus"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card-panel h-100">
+      <div class="card-panel__head">
+        <h2>Recent listings</h2>
+        <a class="small" href="{% url 'dashboard:products' %}">View all</a>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Listing</th><th>Seller</th><th>Status</th><th class="text-end">Current</th></tr></thead>
+          <tbody>
+            {% for product in recent_products %}
+              <tr>
+                <td>
+                  <a href="{% url 'dashboard:product_detail' product.pk %}" class="fw-semibold">{{ product.title|truncatechars:38 }}</a>
+                  <div class="text-muted-2 small">{{ product.category.name }}</div>
+                </td>
+                <td class="small">{{ product.seller.username }}</td>
+                <td>{% include "dashboard/_status_badge.html" with status=product.status label=product.get_status_display %}</td>
+                <td class="text-end fw-semibold">{{ product.current_price|default:product.starting_price|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><i class="bi bi-inbox"></i>No listings yet.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Recent payments</h2><a class="small" href="{% url 'dashboard:payments' %}">View all</a></div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Winner</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for payment in recent_payments %}
+              <tr>
+                <td>
+                  <a href="{% url 'dashboard:payment_detail' payment.pk %}" class="fw-semibold">{{ payment.winner.product.title|truncatechars:26 }}</a>
+                  <div class="text-muted-2 small">{{ payment.payer.username }} · {{ payment.get_method_display }}</div>
+                </td>
+                <td class="fw-semibold">{{ payment.amount|floatformat:2 }}</td>
+                <td>
+                  {% if payment.status == "VERIFIED" %}<span class="badge-soft is-green">Verified</span>
+                  {% elif payment.status == "REJECTED" %}<span class="badge-soft is-red">Rejected</span>
+                  {% else %}<span class="badge-soft is-amber">Pending</span>{% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><i class="bi bi-credit-card"></i>No payments yet.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card-panel mt-3">
+  <div class="card-panel__head"><h2>Recent activity</h2><a class="small" href="{% url 'dashboard:activity' %}">Full log</a></div>
+  <div class="card-panel__body">
+    <ul class="activity-list">
+      {% for item in activity %}
+        <li class="activity-item">
+          <span class="activity-item__icon"><i class="bi {{ item.icon }}"></i></span>
+          <div>
+            <div class="activity-item__text">{% if item.url %}<a href="{{ item.url }}">{{ item.text }}</a>{% else %}{{ item.text }}{% endif %}</div>
+            <div class="activity-item__time">{{ item.ts|naturaltime }}</div>
+          </div>
+        </li>
+      {% empty %}
+        <div class="empty-state"><i class="bi bi-activity"></i>No activity recorded yet.</div>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}

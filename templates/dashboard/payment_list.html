@@ -1,0 +1,55 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="card-panel">
+  <div class="card-panel__head">
+    <form class="filter-bar flex-grow-1" method="get">
+      <input class="form-control form-control-sm" type="search" name="q" placeholder="Txn id, listing or payer…" value="{{ query }}" style="min-width:180px;">
+      <select class="form-select form-select-sm" name="status" style="width:auto;">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select class="form-select form-select-sm" name="method" style="width:auto;">
+        <option value="">All methods</option>
+        {% for value, label in methods %}
+          <option value="{{ value }}" {% if filters.method == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      <a class="btn btn-sm btn-outline-secondary" href=".">Reset</a>
+    </form>
+    <span class="text-muted-2 small">{{ page_obj.paginator.count|intcomma }} payment{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Auction</th><th>Payer</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th><th>Status</th><th>Submitted</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for payment in page_obj %}
+          <tr>
+            <td><a href="{% url 'dashboard:winner_detail' payment.winner.pk %}" class="fw-semibold">{{ payment.winner.product.title|truncatechars:30 }}</a></td>
+            <td><a href="{% url 'dashboard:user_detail' payment.payer.pk %}">{{ payment.payer.username }}</a></td>
+            <td class="small">{{ payment.get_method_display }}</td>
+            <td class="small text-muted-2">{{ payment.transaction_id|default:"—" }}</td>
+            <td class="text-end fw-semibold">{{ payment.amount|floatformat:2 }}</td>
+            <td>
+              {% if payment.status == "VERIFIED" %}<span class="badge-soft is-green">Verified</span>
+              {% elif payment.status == "REJECTED" %}<span class="badge-soft is-red">Rejected</span>
+              {% else %}<span class="badge-soft is-amber">Pending</span>{% endif %}
+            </td>
+            <td class="small text-muted-2">{{ payment.created_at|date:"M j, Y" }}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:payment_detail' payment.pk %}">Review</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8"><div class="empty-state"><i class="bi bi-credit-card"></i>No payments match your filters.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-panel__body pt-0">{% include "dashboard/_pagination.html" %}</div>
+</div>
+{% endblock %}

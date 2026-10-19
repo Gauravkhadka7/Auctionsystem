@@ -11,8 +11,8 @@
         <tr>
           <td><a href="{{ win.product.get_absolute_url }}">{{ win.product.title }}</a></td>
           <td class="text-brass">{{ win.winning_price }}</td>
-          <td>{% if win.is_payment_verified %}<span class="badge-status badge-live">Verified</span>{% else %}<span class="badge-status badge-closed">Pending</span>{% endif %}</td>
-          <td>{% if win.is_delivered %}<span class="badge-status badge-live">Delivered</span>{% else %}<span class="badge-status badge-closed">Pending</span>{% endif %}</td>
+          <td>{% if win.is_payment_verified %}<span class="badge-status badge-success">Verified</span>{% else %}<span class="badge-status badge-pending">Pending</span>{% endif %}</td>
+          <td>{% if win.is_delivered %}<span class="badge-status badge-success">Delivered</span>{% else %}<span class="badge-status badge-pending">Pending</span>{% endif %}</td>
           <td class="text-end"><a href="{% url 'winners:detail' win.pk %}" class="btn btn-sm btn-outline-cream">View</a></td>
         </tr>
       {% empty %}<tr><td colspan="5" class="text-cream-dim">You haven't won any auctions yet.</td></tr>{% endfor %}

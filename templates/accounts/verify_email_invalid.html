@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Verification link problem — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 520px;">
+  <div class="card-panel p-4 text-center">
+    <i class="bi bi-exclamation-octagon" style="font-size: 2.5rem; color: var(--color-accent);"></i>
+    <h2 class="mt-2 mb-1">This link won't work</h2>
+    <p class="text-cream-dim mb-3">
+      {% if reason == "invalid" %}
+        We couldn't recognise this verification link. It may have been mistyped or truncated by your email client.
+      {% else %}
+        This verification link is invalid or has expired, or it has already been used.
+      {% endif %}
+    </p>
+    <p class="small text-cream-dim mb-4">
+      Verification links are single-use and time-limited. Request a fresh one and we'll email you a new link.
+    </p>
+    <a href="{% url 'accounts:resend_verification' %}" class="btn btn-brass w-100 mb-2">Request a new link</a>
+    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary w-100">Back to login</a>
+  </div>
+</div>
+{% endblock %}

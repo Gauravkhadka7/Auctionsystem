@@ -1,0 +1,139 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card-panel">
+      {% if product.main_image %}
+        <img src="{{ product.main_image.url }}" alt="{{ product.title }}" class="w-100" style="border-radius:12px 12px 0 0; max-height:320px; object-fit:cover;">
+      {% else %}
+        <div class="empty-state"><i class="bi bi-image"></i>No main image</div>
+      {% endif %}
+      <div class="card-panel__body">
+        <h3 class="mb-1">{{ product.title }}</h3>
+        <div class="d-flex gap-2 align-items-center mb-3">
+          {% include "dashboard/_status_badge.html" with status=product.status label=product.get_status_display %}
+          {% if product.is_featured %}<span class="badge-soft is-amber"><i class="bi bi-star-fill"></i> Featured</span>{% endif %}
+        </div>
+        <div class="small">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Seller</span><a href="{% url 'dashboard:user_detail' product.seller.pk %}">{{ product.seller.username }}</a></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Category</span><span>{{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Condition</span><span>{{ product.get_condition_display }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Starting price</span><span>{{ product.starting_price|floatformat:2 }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Reserve price</span><span>{% if product.reserve_price %}{{ product.reserve_price|floatformat:2 }}{% else %}<span class="text-muted-2">None</span>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Bid increment</span><span>{{ product.bid_increment|floatformat:2 }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Current price</span><span class="fw-semibold">{{ product.current_price|default:product.starting_price|floatformat:2 }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Reserve met</span><span>{% if product.reserve_met %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Auction start</span><span>{{ product.auction_start|date:"M j, Y H:i" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Auction end</span><span>{{ product.auction_end|date:"M j, Y H:i" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Total bids</span><span>{{ product.bid_count }}</span></div>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary w-100 mt-3" href="{{ product.get_absolute_url }}" target="_blank" rel="noopener">
+          <i class="bi bi-box-arrow-up-right"></i> View public page
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>Moderation</h2></div>
+      <div class="card-panel__body">
+        {% if product.status == "PENDING" %}
+          <p class="text-muted-2 small">This listing is awaiting approval. Approval schedules it as <strong>Upcoming</strong>; the lifecycle engine promotes it to <strong>Live</strong> at its start time.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <form method="post" action="{% url 'dashboard:product_approve' product.pk %}" data-confirm="Approve this listing?">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-success"><i class="bi bi-check2-circle"></i> Approve listing</button>
+            </form>
+            <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#rejectForm">
+              <i class="bi bi-x-circle"></i> Reject…
+            </button>
+          </div>
+          <div class="collapse mt-3" id="rejectForm">
+            <form method="post" action="{% url 'dashboard:product_reject' product.pk %}" data-confirm="Reject this listing?">
+              {% csrf_token %}
+              <textarea class="form-control form-control-sm mb-2" name="reason" rows="2" placeholder="Reason shared with the seller (optional)"></textarea>
+              <button class="btn btn-sm btn-danger">Confirm rejection</button>
+            </form>
+          </div>
+        {% elif product.status == "LIVE" %}
+          <p class="text-muted-2 small">The auction is live. You can toggle its featured status; lifecycle changes are handled automatically by the engine.</p>
+          <form method="post" action="{% url 'dashboard:product_toggle_featured' product.pk %}" data-confirm="Toggle featured status?">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-warning">
+              <i class="bi bi-star"></i> {% if product.is_featured %}Remove from featured{% else %}Mark as featured{% endif %}
+            </button>
+          </form>
+        {% else %}
+          <p class="text-muted-2 small mb-0">No moderation actions are available in the <strong>{{ product.get_status_display }}</strong> state.</p>
+        {% endif %}
+        {% if product.admin_remarks %}
+          <div class="alert alert-secondary small mt-3 mb-0"><strong>Admin remarks:</strong> {{ product.admin_remarks }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if winner %}
+      <div class="card-panel mt-3">
+        <div class="card-panel__head"><h2>Winner</h2></div>
+        <div class="card-panel__body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold">{{ winner.bidder.username }}</div>
+            <div class="text-muted-2 small">Winning bid {{ winner.winning_price|floatformat:2 }}</div>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'dashboard:winner_detail' winner.pk %}">Verify</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card-panel mt-3">
+      <div class="card-panel__head"><h2>Bid history <span class="text-muted-2 fw-normal">· latest 20</span></h2></div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Bidder</th><th class="text-end">Amount</th><th class="text-end">Placed</th></tr></thead>
+          <tbody>
+            {% for bid in bids %}
+              <tr>
+                <td class="text-muted-2 small">{{ forloop.counter }}</td>
+                <td><a href="{% url 'dashboard:user_detail' bid.bidder.pk %}">{{ bid.bidder.username }}</a></td>
+                <td class="text-end fw-semibold">{{ bid.amount|floatformat:2 }}</td>
+                <td class="text-end small text-muted-2">{{ bid.created_at|date:"M j, Y H:i" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><i class="bi bi-hammer"></i>No bids placed yet.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card-panel mt-3">
+  <div class="card-panel__head"><h2>Description</h2></div>
+  <div class="card-panel__body">
+    <p style="white-space:pre-line;">{{ product.description }}</p>
+    {% if product.delivery_info %}<hr><div class="stat-card__label">Delivery</div><p class="mb-0" style="white-space:pre-line;">{{ product.delivery_info }}</p>{% endif %}
+    {% if specifications %}
+      <hr>
+      <div class="stat-card__label mb-2">Specifications</div>
+      <div class="row">
+        {% for spec in specifications %}
+          <div class="col-sm-6"><div class="d-flex justify-content-between py-1 border-bottom"><span class="text-muted-2">{{ spec.name }}</span><span>{{ spec.value }}</span></div></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if images %}
+      <hr>
+      <div class="stat-card__label mb-2">Gallery</div>
+      <div class="d-flex flex-wrap gap-2">
+        {% for img in images %}
+          <a href="{{ img.image.url }}" target="_blank" rel="noopener"><img src="{{ img.image.url }}" class="table-thumb" style="width:72px;height:72px;" alt=""></a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

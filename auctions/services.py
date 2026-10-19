@@ -16,6 +16,7 @@ from django.utils import timezone
 from notifications.models import Notification
 from products.models import Product
 from winners.models import Winner
+from .broadcast import broadcast_auction
 
 
 def sync_auction_states():
@@ -25,10 +26,14 @@ def sync_auction_states():
     return {"started": started, "closed": closed}
 
 
+@transaction.atomic
 def _activate_upcoming_auctions(now):
-    upcoming = Product.objects.filter(status=Product.Status.UPCOMING, auction_start__lte=now)
-    count = upcoming.count()
+    upcoming = Product.objects.select_for_update().filter(
+        status=Product.Status.UPCOMING, auction_start__lte=now
+    )
+    count = 0
     for product in upcoming:
+        count += 1
         product.status = Product.Status.LIVE
         product.save(update_fields=["status"])
         Notification.objects.create(
@@ -36,6 +41,7 @@ def _activate_upcoming_auctions(now):
             message=f"Your auction \"{product.title}\" has gone live.",
             link=product.get_absolute_url(),
         )
+        broadcast_auction(product, event="live")
     return count
 
 
@@ -73,4 +79,5 @@ def _close_expired_auctions(now):
                 message=f"Your auction \"{product.title}\" closed with no winner ({reason}).",
                 link=product.get_absolute_url(),
             )
+        broadcast_auction(product, event="closed")
     return count

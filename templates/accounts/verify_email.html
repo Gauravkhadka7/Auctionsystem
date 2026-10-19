@@ -5,12 +5,19 @@
   <div class="card-panel p-4 text-center">
     <h2 class="mb-1">Check your inbox</h2>
     <p class="text-cream-dim mb-4">We sent a 6-digit code to {{ target_user.email }}.</p>
+    {% if dev_code %}
+      <div class="alert alert-warning" role="alert">
+        <strong>Development build:</strong> email isn't actually sent, so here's your code:<br>
+        <span class="fs-1 fw-bold" style="letter-spacing: 0.5rem;">{{ dev_code }}</span>
+      </div>
+    {% endif %}
     <form method="post">
       {% csrf_token %}
       <input type="text" name="code" maxlength="6" class="form-control text-center mb-3" style="font-size:1.5rem; letter-spacing: 0.5rem;" placeholder="------" autofocus>
       <button class="btn btn-brass w-100" type="submit">Verify</button>
     </form>
     <a href="{% url 'accounts:resend_otp' target_user.id %}" class="d-block small mt-3">Resend code</a>
+    <a href="{% url 'accounts:login' %}" class="d-block small mt-1">Back to login</a>
   </div>
 </div>
 {% endblock %}

@@ -3,6 +3,7 @@ from both the regular POST view and the AJAX endpoint."""
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from auctions.broadcast import broadcast_auction
 from notifications.models import Notification
 from .models import Bid
 
@@ -35,5 +36,7 @@ def place_bid(product, bidder, amount):
             message=f"You've been outbid on \"{product.title}\". New highest bid: {amount}.",
             link=product.get_absolute_url(),
         )
+
+    broadcast_auction(product, event="bid")
 
     return bid

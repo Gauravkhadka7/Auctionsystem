@@ -10,9 +10,19 @@
         <div class="hero-eyebrow mb-2">Est. this semester — verified sellers, transparent bidding</div>
         <h1 class="mb-3">Every lot has a story.<br>Every bid moves it forward.</h1>
         <p class="text-cream-dim mb-4" style="max-width: 46ch;">Browse live auctions closing by the second, place a bid in one click, and track every lot from opening price to hammer price.</p>
-        <div class="d-flex gap-3">
-          <a href="{% url 'products:list' %}?status=LIVE" class="btn btn-bid btn-lg px-4">Browse Live Auctions</a>
-          <a href="{% url 'accounts:register' %}" class="btn btn-outline-cream btn-lg px-4">Start Selling</a>
+        <div class="d-flex flex-wrap gap-3">
+          {% if user.is_authenticated %}
+            {% if user.is_seller or user.is_superuser %}
+              <a href="{% url 'products:product_create' %}" class="btn btn-bid btn-lg px-4"><i class="bi bi-tag"></i> Start Selling</a>
+              <a href="{% url 'products:my_products' %}" class="btn btn-outline-cream btn-lg px-4">My Listings</a>
+            {% else %}
+              <a href="{% url 'products:list' %}?status=LIVE" class="btn btn-bid btn-lg px-4">Browse Live Auctions</a>
+            {% endif %}
+          {% else %}
+            <a href="{% url 'products:list' %}?status=LIVE" class="btn btn-bid btn-lg px-4">Browse Auctions</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-cream btn-lg px-4">Login</a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline-cream btn-lg px-4">Register</a>
+          {% endif %}
         </div>
       </div>
       <div class="col-lg-5">
@@ -94,7 +104,7 @@
     {% for winner in recent_winners %}
       <div class="col-md-4">
         <div class="card-panel p-3 d-flex flex-row gap-3 align-items-center">
-          {% if winner.product.main_image %}<img src="{{ winner.product.main_image.url }}" style="width:56px;height:56px;object-fit:cover;border-radius:4px;">{% endif %}
+          {% if winner.product.main_image %}<img src="{{ winner.product.main_image.url }}" alt="{{ winner.product.title }}" style="width:56px;height:56px;object-fit:cover;border-radius:4px;">{% endif %}
           <div>
             <div class="lot-title" style="font-size:0.95rem;">{{ winner.product.title }}</div>
             <div class="small text-cream-dim">{{ winner.bidder.first_name|default:winner.bidder.username }} won for <span class="text-brass">{{ winner.winning_price }}</span></div>

@@ -1,0 +1,88 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card-panel">
+      <div class="card-panel__head">
+        <h2>Payment #{{ payment.pk }}</h2>
+        {% if payment.status == "VERIFIED" %}<span class="badge-soft is-green">Verified</span>
+        {% elif payment.status == "REJECTED" %}<span class="badge-soft is-red">Rejected</span>
+        {% else %}<span class="badge-soft is-amber">Pending review</span>{% endif %}
+      </div>
+      <div class="card-panel__body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <div class="fw-semibold">{{ payment.winner.product.title }}</div>
+            <div class="text-muted-2 small">Winner: {{ winner.bidder.username }}</div>
+          </div>
+          <div class="text-end">
+            <div class="stat-card__value">{{ payment.amount|floatformat:2 }}</div>
+            <div class="stat-card__label">Amount</div>
+          </div>
+        </div>
+
+        <div class="small">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Method</span><span>{{ payment.get_method_display }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Transaction reference</span><span>{{ payment.transaction_id|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Payer</span><a href="{% url 'dashboard:user_detail' payment.payer.pk %}">{{ payment.payer.username }}</a></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Winning bid</span><span>{{ winner.winning_price|floatformat:2 }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Submitted</span><span>{{ payment.created_at|date:"M j, Y H:i" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Processed</span><span>{{ payment.verified_at|date:"M j, Y H:i"|default:"—" }}</span></div>
+        </div>
+
+        {% if payment.receipt %}
+          <a class="btn btn-sm btn-outline-secondary w-100 mt-3" href="{{ payment.receipt.url }}" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-image"></i> View uploaded receipt
+          </a>
+        {% else %}
+          <div class="text-muted-2 small mt-3">No receipt uploaded.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>Verification</h2></div>
+      <div class="card-panel__body">
+        <div class="alert alert-light border small">
+          <i class="bi bi-shield-check"></i>
+          A payment is only marked verified by an explicit admin action. A submitted reference alone does not verify it.
+        </div>
+
+        {% if payment.status == "PENDING" %}
+          <div class="d-flex gap-2">
+            <form method="post" action="{% url 'dashboard:payment_verify' payment.pk %}" data-confirm="Mark this payment as VERIFIED?">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-success"><i class="bi bi-check2-circle"></i> Verify payment</button>
+            </form>
+            <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#rejectPayment">Reject…</button>
+          </div>
+          <div class="collapse mt-2" id="rejectPayment">
+            <form method="post" action="{% url 'dashboard:payment_reject' payment.pk %}" data-confirm="Reject this payment?">
+              {% csrf_token %}
+              <textarea class="form-control form-control-sm mb-2" name="reason" rows="2" placeholder="Reason shared with the payer (optional)"></textarea>
+              <button class="btn btn-sm btn-danger">Confirm rejection</button>
+            </form>
+          </div>
+        {% else %}
+          <div class="text-muted-2 small">This payment has already been processed and can't be changed.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-panel mt-3">
+      <div class="card-panel__head"><h2>Winner record</h2></div>
+      <div class="card-panel__body">
+        <div class="small">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">KYC verified</span><span>{% if winner.bidder.is_kyc_verified %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Payment verified</span><span>{% if winner.is_payment_verified %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</span></div>
+        </div>
+        <a class="btn btn-sm btn-outline-primary w-100 mt-3" href="{% url 'dashboard:winner_detail' winner.pk %}">Open winner verification</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

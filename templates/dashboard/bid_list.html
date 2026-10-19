@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="alert alert-light border d-flex align-items-center gap-2 small mb-3">
+  <i class="bi bi-lock"></i>
+  <span>Bid history is read-only. Records are never edited here, and bid validity/locking is enforced by the bidding service.</span>
+</div>
+
+<div class="card-panel">
+  <div class="card-panel__head">
+    <form class="filter-bar flex-grow-1" method="get">
+      <input class="form-control form-control-sm" type="search" name="q" placeholder="Listing or bidder…" value="{{ query }}" style="min-width:180px;">
+      <input class="form-control form-control-sm" type="date" name="from" value="{{ filters.from }}" style="width:auto;">
+      <input class="form-control form-control-sm" type="date" name="to" value="{{ filters.to }}" style="width:auto;">
+      <select class="form-select form-select-sm" name="sort" style="width:auto;">
+        <option value="newest" {% if filters.sort == "newest" or not filters.sort %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest</option>
+        <option value="amount_high" {% if filters.sort == "amount_high" %}selected{% endif %}>Amount high</option>
+        <option value="amount_low" {% if filters.sort == "amount_low" %}selected{% endif %}>Amount low</option>
+      </select>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      <a class="btn btn-sm btn-outline-secondary" href=".">Reset</a>
+    </form>
+    <span class="text-muted-2 small">{{ total_bids|intcomma }} total bids</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Auction</th><th>Bidder</th><th class="text-end">Amount</th><th>Auction status</th><th class="text-end">Placed at</th></tr></thead>
+      <tbody>
+        {% for bid in page_obj %}
+          <tr>
+            <td><a href="{% url 'dashboard:product_detail' bid.product.pk %}" class="fw-semibold">{{ bid.product.title|truncatechars:44 }}</a></td>
+            <td><a href="{% url 'dashboard:user_detail' bid.bidder.pk %}">{{ bid.bidder.username }}</a></td>
+            <td class="text-end fw-semibold">{{ bid.amount|floatformat:2 }}</td>
+            <td>{% include "dashboard/_status_badge.html" with status=bid.product.status label=bid.product.get_status_display %}</td>
+            <td class="text-end small text-muted-2">{{ bid.created_at|date:"M j, Y H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state"><i class="bi bi-hammer"></i>No bids match your filters.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-panel__body pt-0">{% include "dashboard/_pagination.html" %}</div>
+</div>
+{% endblock %}

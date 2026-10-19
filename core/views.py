@@ -1,8 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Sum
 from django.shortcuts import render, redirect
-from django.utils import timezone
 
 from bids.models import Bid
 from categories.models import Category
@@ -34,7 +32,7 @@ def home(request):
 def dashboard_redirect(request):
     user = request.user
     if user.is_admin_role:
-        return redirect("core:admin_dashboard")
+        return redirect("dashboard:overview")
     if user.is_seller:
         return redirect("core:seller_dashboard")
     return redirect("core:bidder_dashboard")
@@ -75,22 +73,9 @@ def seller_dashboard(request):
 
 @admin_required
 def admin_dashboard(request):
-    from accounts.models import User
-    products = Product.objects.all()
-    context = {
-        "total_sellers": User.objects.filter(role=User.Role.SELLER).count(),
-        "total_bidders": User.objects.filter(role=User.Role.BIDDER).count(),
-        "total_products": products.count(),
-        "live_count": products.filter(status=Product.Status.LIVE).count(),
-        "upcoming_count": products.filter(status=Product.Status.UPCOMING).count(),
-        "closed_count": products.filter(status=Product.Status.CLOSED).count(),
-        "pending_approval_count": products.filter(status=Product.Status.PENDING).count(),
-        "total_winners": Winner.objects.count(),
-        "total_revenue": Winner.objects.aggregate(total=Sum("winning_price"))["total"] or 0,
-        "top_categories": Category.objects.annotate(num=Count("products")).order_by("-num")[:5],
-        "recent_products": products.order_by("-created_at")[:8],
-    }
-    return render(request, "core/admin_dashboard.html", context)
+    # Superseded by the dedicated admin dashboard app; kept as a redirect so
+    # older bookmarks/links keep working.
+    return redirect("dashboard:overview")
 
 
 def about(request):

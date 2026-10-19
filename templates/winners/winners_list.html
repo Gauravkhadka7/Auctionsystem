@@ -7,7 +7,7 @@
     {% for winner in page_obj %}
       <div class="col-md-4">
         <div class="card-panel p-3 d-flex flex-row gap-3">
-          {% if winner.product.main_image %}<img src="{{ winner.product.main_image.url }}" style="width:64px;height:64px;object-fit:cover;border-radius:4px;">{% endif %}
+          {% if winner.product.main_image %}<img src="{{ winner.product.main_image.url }}" alt="{{ winner.product.title }}" style="width:64px;height:64px;object-fit:cover;border-radius:4px;">{% endif %}
           <div>
             <div class="lot-title" style="font-size:1rem;">{{ winner.product.title }}</div>
             <div class="small text-cream-dim">{{ winner.bidder.first_name|default:winner.bidder.username }}</div>

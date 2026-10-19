@@ -15,6 +15,9 @@
       <a href="{% url 'accounts:password_reset' %}">Forgot password?</a>
       <a href="{% url 'accounts:register' %}">Create an account</a>
     </div>
+    <p class="small text-cream-dim mt-2 mb-0">
+      Not verified yet? <a href="{% url 'accounts:resend_verification' %}">Resend the verification email</a>.
+    </p>
   </div>
 </div>
 {% endblock %}

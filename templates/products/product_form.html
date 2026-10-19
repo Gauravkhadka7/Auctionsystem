@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-{% block title %}{% if is_edit %}Edit Product{% else %}List a New Item{% endif %} — LotHouse{% endblock %}
+{% block title %}{% if is_edit %}Edit Listing{% else %}Start Selling{% endif %} — LotHouse{% endblock %}
 {% block content %}
-<div class="container py-5" style="max-width: 780px;">
+<div class="container py-5" style="max-width: 820px;">
   <div class="section-heading">
-    <div><div class="eyebrow">Seller</div><h2>{% if is_edit %}Edit Listing{% else %}List a New Item{% endif %}</h2></div>
+    <div>
+      <div class="eyebrow">Seller</div>
+      <h2>{% if is_edit %}Edit Listing{% else %}Start Selling{% endif %}</h2>
+      {% if not is_edit %}<p class="text-cream-dim mb-0">Add your item's details and submit it for approval.</p>{% endif %}
+    </div>
   </div>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <div class="card-panel p-4 mb-4">
       <h5 class="mb-3">Item Details</h5>
@@ -15,25 +19,44 @@
     </div>
 
     <div class="card-panel p-4 mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Additional Images</h5>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h5 class="mb-0">Gallery Images</h5>
+          <small class="text-cream-dim">At least one image. JPEG, PNG, WEBP or GIF, max 5 MB each.</small>
+        </div>
         <button type="button" class="btn btn-sm btn-outline-cream" data-formset-add="images">+ Add image</button>
       </div>
       {{ image_formset.management_form }}
+      {% if image_formset.non_form_errors %}
+        <div class="alert alert-danger py-2 mb-2">
+          {% for error in image_formset.non_form_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
       <div data-formset-container="images">
         {% for f in image_formset %}
-          <div class="row g-2 align-items-center mb-2" data-formset-row>
-            <div class="col-9">{{ f.image }}{{ f.id }}</div>
-            <div class="col-3">
-              {% if f.instance.pk %}<label class="small text-cream-dim">{{ f.DELETE }} Remove</label>{% endif %}
+          <div class="row g-2 align-items-start mb-3" data-formset-row>
+            <div class="col-md-9">
+              {{ f.image }}
+              {% for error in f.image.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+              <img class="img-preview mt-2 d-none" alt="Image preview" style="max-height: 96px; border-radius: 6px;">
+            </div>
+            <div class="col-md-3 d-flex align-items-center gap-2">
+              {% if f.instance.pk %}
+                <span class="d-none">{{ f.DELETE }}</span>
+              {% endif %}
+              <button type="button" class="btn btn-sm btn-outline-cream" data-formset-remove>Remove</button>
             </div>
           </div>
         {% endfor %}
       </div>
       <template data-formset-empty="images">
-        <div class="row g-2 align-items-center mb-2" data-formset-row>
-          <div class="col-12">
-            <input type="file" name="images-__prefix__-image" class="form-control" id="id_images-__prefix__-image">
+        <div class="row g-2 align-items-start mb-3" data-formset-row>
+          <div class="col-md-9">
+            <input type="file" name="images-__prefix__-image" class="form-control" id="id_images-__prefix__-image" accept="image/*">
+            <img class="img-preview mt-2 d-none" alt="Image preview" style="max-height: 96px; border-radius: 6px;">
+          </div>
+          <div class="col-md-3 d-flex align-items-center">
+            <button type="button" class="btn btn-sm btn-outline-cream" data-formset-remove>Remove</button>
           </div>
         </div>
       </template>
@@ -47,22 +70,57 @@
       {{ spec_formset.management_form }}
       <div data-formset-container="specifications">
         {% for f in spec_formset %}
-          <div class="row g-2 mb-2" data-formset-row>
+          <div class="row g-2 align-items-center mb-2" data-formset-row>
             <div class="col-5">{{ f.name }}{{ f.id }}</div>
-            <div class="col-6">{{ f.value }}</div>
-            <div class="col-1">{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</div>
+            <div class="col-5">{{ f.value }}</div>
+            <div class="col-2 text-end">
+              {% if f.instance.pk %}<span class="d-none">{{ f.DELETE }}</span>{% endif %}
+              <button type="button" class="btn btn-sm btn-outline-cream" data-formset-remove>Remove</button>
+            </div>
           </div>
         {% endfor %}
       </div>
       <template data-formset-empty="specifications">
-        <div class="row g-2 mb-2" data-formset-row>
+        <div class="row g-2 align-items-center mb-2" data-formset-row>
           <div class="col-5"><input type="text" name="specifications-__prefix__-name" class="form-control" placeholder="Parameter name"></div>
-          <div class="col-7"><input type="text" name="specifications-__prefix__-value" class="form-control" placeholder="Value"></div>
+          <div class="col-5"><input type="text" name="specifications-__prefix__-value" class="form-control" placeholder="Value"></div>
+          <div class="col-2 text-end"><button type="button" class="btn btn-sm btn-outline-cream" data-formset-remove>Remove</button></div>
         </div>
       </template>
     </div>
 
-    <button class="btn btn-brass btn-lg" type="submit">{% if is_edit %}Save Changes{% else %}Submit for Approval{% endif %}</button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-brass btn-lg" type="submit">{% if is_edit %}Save Changes{% else %}Submit for Approval{% endif %}</button>
+      <a href="{% url 'products:my_products' %}" class="btn btn-outline-cream btn-lg">Cancel</a>
+    </div>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  function renderPreview(input) {
+    var row = input.closest("[data-formset-row]");
+    var preview = row ? row.querySelector(".img-preview") : null;
+    if (!preview) return;
+    var file = input.files && input.files[0];
+    if (!file) {
+      preview.classList.add("d-none");
+      preview.removeAttribute("src");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.classList.remove("d-none");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.addEventListener("change", function (e) {
+    if (e.target.matches('input[type="file"]')) renderPreview(e.target);
+  });
+})();
+</script>
 {% endblock %}

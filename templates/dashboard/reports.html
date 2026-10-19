@@ -1,0 +1,135 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+{{ charts|json_script:"chartData" }}
+
+<div class="card-panel mb-3">
+  <div class="card-panel__body">
+    <form class="filter-bar" method="get">
+      <div>
+        <label class="form-label small mb-1">From</label>
+        <input class="form-control form-control-sm" type="date" name="start" value="{{ filters.start }}">
+      </div>
+      <div>
+        <label class="form-label small mb-1">To</label>
+        <input class="form-control form-control-sm" type="date" name="end" value="{{ filters.end }}">
+      </div>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Apply</button>
+      <a class="btn btn-sm btn-outline-secondary" href=".">Last 30 days</a>
+      <span class="text-muted-2 small ms-auto">Showing {{ start_date|date:"M j, Y" }} – {{ end_date|date:"M j, Y" }}</span>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__label">Winning bid value (gross)</div>
+      <div class="stat-card__value">{{ stats.winners.winning_value|default:0|floatformat:2|intcomma }}</div>
+      <div class="stat-card__hint">SUM(Winner.winning_price)</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__label">Verified payment total</div>
+      <div class="stat-card__value text-success">{{ stats.payments.verified_total|default:0|floatformat:2|intcomma }}</div>
+      <div class="stat-card__hint">SUM(Payment.amount) · status=VERIFIED</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-panel h-100"><div class="card-panel__body">
+      <div class="stat-card__label">Platform revenue</div>
+      <div class="stat-card__value text-muted-2">—</div>
+      <div class="stat-card__hint">Not tracked in the schema</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-8">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>User registration trend</h2></div>
+      <div class="card-panel__body"><div class="chart-box"><canvas data-chart="registrationTrend"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Auctions by status</h2></div>
+      <div class="card-panel__body"><div class="chart-box chart-sm"><canvas data-chart="auctionsByStatus"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-8">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Bids over time</h2></div>
+      <div class="card-panel__body"><div class="chart-box"><canvas data-chart="bidsTrend"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Top winning bids</h2></div>
+      <div class="card-panel__body"><div class="chart-box chart-sm"><canvas data-chart="topWinningBids"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Listings by category</h2></div>
+      <div class="card-panel__body"><div class="chart-box"><canvas data-chart="categoryDistribution"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card-panel h-100">
+      <div class="card-panel__head"><h2>Seller performance</h2></div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Seller</th><th class="text-center">Listings</th><th class="text-center">Wins</th><th class="text-end">Sales</th></tr></thead>
+          <tbody>
+            {% for seller in seller_performance %}
+              <tr>
+                <td><a href="{% url 'dashboard:user_detail' seller.pk %}">{{ seller.username }}</a></td>
+                <td class="text-center">{{ seller.listing_count }}</td>
+                <td class="text-center">{{ seller.won_count }}</td>
+                <td class="text-end">{{ seller.sales_total|default:0|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><i class="bi bi-shop"></i>No sellers yet.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card-panel mt-3">
+  <div class="card-panel__head"><h2>Most active listings</h2><a class="small" href="{% url 'dashboard:products' %}?sort=most_bids">View all</a></div>
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Listing</th><th>Seller</th><th>Status</th><th class="text-center">Bids</th><th class="text-end">Current</th></tr></thead>
+      <tbody>
+        {% for product in top_listings %}
+          <tr>
+            <td><a href="{% url 'dashboard:product_detail' product.pk %}" class="fw-semibold">{{ product.title|truncatechars:40 }}</a></td>
+            <td class="small">{{ product.seller.username }}</td>
+            <td>{% include "dashboard/_status_badge.html" with status=product.status label=product.get_status_display %}</td>
+            <td class="text-center">{{ product.bid_count }}</td>
+            <td class="text-end">{{ product.current_price|default:product.starting_price|floatformat:2 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state"><i class="bi bi-bar-chart"></i>No bid activity yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}

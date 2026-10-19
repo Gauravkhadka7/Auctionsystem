@@ -3,6 +3,15 @@ Pillow==12.3.0
 django-crispy-forms==2.6
 crispy-bootstrap5==2026.3
 
+# Live auction updates over WebSocket (Daphne serves the ASGI app; Channels
+# provides the consumer/channel-layer plumbing).
+channels==4.3.2
+daphne==4.2.3
+
+# Required for a shared channel layer across multiple processes/workers.
+# Leave out for single-process deploys using the in-memory layer.
+# channels-redis==4.3.0
+
 # Uncomment if you switch DB_ENGINE=postgresql in your .env
 # psycopg2-binary==2.9.9
 

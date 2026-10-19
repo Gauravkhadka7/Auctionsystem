@@ -1,0 +1,125 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card-panel">
+      <div class="card-panel__head">
+        <h2>Winning bid</h2>
+        {% if winner.bidder.is_kyc_verified %}<span class="badge-soft is-green">KYC verified</span>
+        {% elif winner.is_verification_submitted %}<span class="badge-soft is-amber">Awaiting review</span>
+        {% else %}<span class="badge-soft">Not submitted</span>{% endif %}
+      </div>
+      <div class="card-panel__body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <div class="fw-semibold">{{ winner.product.title }}</div>
+            <div class="text-muted-2 small">Seller: {{ winner.product.seller.username }}</div>
+          </div>
+          <div class="text-end">
+            <div class="stat-card__value">{{ winner.winning_price|floatformat:2 }}</div>
+            <div class="stat-card__label">Winning bid</div>
+          </div>
+        </div>
+
+        <div class="small">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Winner</span><a href="{% url 'dashboard:user_detail' winner.bidder.pk %}">{{ winner.bidder.username }}</a></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Email</span><span>{{ winner.bidder.email|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Verification submitted</span><span>{% if winner.is_verification_submitted %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Payment verified</span><span>{% if winner.is_payment_verified %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Delivered</span><span>{% if winner.is_delivered %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash-circle text-muted-2"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Closed</span><span>{{ winner.created_at|date:"M j, Y H:i" }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-panel mt-3">
+      <div class="card-panel__head"><h2>Bid comparison <span class="text-muted-2 fw-normal">· top bids</span></h2></div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Bidder</th><th class="text-end">Amount</th><th class="text-end">Placed</th></tr></thead>
+          <tbody>
+            {% for bid in top_bids %}
+              <tr {% if bid.bidder_id == winner.bidder_id and bid.amount == winner.winning_price %}class="table-active"{% endif %}>
+                <td>{{ bid.bidder.username }}{% if bid.amount == winner.winning_price %} <span class="badge-soft is-green">Winner</span>{% endif %}</td>
+                <td class="text-end">{{ bid.amount|floatformat:2 }}</td>
+                <td class="text-end small text-muted-2">{{ bid.created_at|date:"M j, H:i" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3"><div class="empty-state"><i class="bi bi-hammer"></i>No bids.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>Verification review</h2></div>
+      <div class="card-panel__body">
+        <div class="small mb-3">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Bidder KYC</span><span>{% if winner.bidder.is_kyc_verified %}<span class="badge-soft is-green">Verified</span>{% else %}<span class="badge-soft">Unverified</span>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Submission</span><span>{% if winner.is_verification_submitted %}Submitted{% else %}Not submitted{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Payout method</span><span>{{ profile.bank_name|default:profile.esewa_number|default:profile.khalti_number|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Account holder</span><span>{{ profile.bank_account_holder|default:"—" }}</span></div>
+        </div>
+
+        {% if profile.citizenship_document %}
+          <a class="btn btn-sm btn-outline-secondary w-100 mb-2" href="{{ profile.citizenship_document.url }}" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-text"></i> Open KYC document
+          </a>
+        {% else %}
+          <div class="text-muted-2 small mb-2">No KYC document uploaded.</div>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'dashboard:winner_verify' winner.pk %}" data-confirm="Verify this winner's identity?">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-success" {% if not winner.is_verification_submitted %}disabled{% endif %}>
+              <i class="bi bi-patch-check"></i> Verify winner
+            </button>
+          </form>
+          <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#rejectVerify">Reject…</button>
+        </div>
+        <div class="collapse mt-2" id="rejectVerify">
+          <form method="post" action="{% url 'dashboard:winner_reject' winner.pk %}" data-confirm="Send verification back to the winner?">
+            {% csrf_token %}
+            <textarea class="form-control form-control-sm mb-2" name="reason" rows="2" placeholder="Reason (optional)"></textarea>
+            <button class="btn btn-sm btn-danger">Confirm</button>
+          </form>
+        </div>
+        {% if not winner.is_verification_submitted %}
+          <div class="text-muted-2 small mt-2"><i class="bi bi-info-circle"></i> The winner hasn't submitted documents yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card-panel mt-3">
+      <div class="card-panel__head"><h2>Payments</h2><a class="small" href="{% url 'dashboard:payments' %}?q={{ winner.bidder.username }}">All</a></div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Method</th><th class="text-end">Amount</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for payment in payments %}
+              <tr>
+                <td class="small">{{ payment.get_method_display }}</td>
+                <td class="text-end">{{ payment.amount|floatformat:2 }}</td>
+                <td>
+                  {% if payment.status == "VERIFIED" %}<span class="badge-soft is-green">Verified</span>
+                  {% elif payment.status == "REJECTED" %}<span class="badge-soft is-red">Rejected</span>
+                  {% else %}<span class="badge-soft is-amber">Pending</span>{% endif %}
+                </td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:payment_detail' payment.pk %}">Review</a></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4"><div class="empty-state"><i class="bi bi-credit-card"></i>No payment submitted.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

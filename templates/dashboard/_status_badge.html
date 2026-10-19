@@ -1,0 +1,8 @@
+{% if status == "LIVE" %}<span class="badge-soft is-green"><i class="bi bi-broadcast"></i> Live</span>
+{% elif status == "UPCOMING" %}<span class="badge-soft is-blue">Upcoming</span>
+{% elif status == "PENDING" %}<span class="badge-soft is-amber">Pending</span>
+{% elif status == "CLOSED" %}<span class="badge-soft">Closed</span>
+{% elif status == "REJECTED" %}<span class="badge-soft is-red">Rejected</span>
+{% elif status == "SUSPENDED" %}<span class="badge-soft is-red">Suspended</span>
+{% elif status == "CANCELLED" %}<span class="badge-soft is-red">Cancelled</span>
+{% else %}<span class="badge-soft">{{ label }}</span>{% endif %}

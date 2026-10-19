@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="card-panel">
+  <div class="card-panel__head">
+    <form class="filter-bar flex-grow-1" method="get">
+      <div class="position-relative">
+        <input class="form-control form-control-sm" type="search" name="q" placeholder="Search name, email, phone…" value="{{ query }}">
+      </div>
+      {% if not role %}
+        <select class="form-select form-select-sm" name="role" style="width:auto;">
+          <option value="">All roles</option>
+          {% for value, label in roles %}
+            <option value="{{ value }}" {% if filters.role == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+      <select class="form-select form-select-sm" name="status" style="width:auto;">
+        <option value="">Any status</option>
+        <option value="active" {% if filters.status == "active" %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if filters.status == "inactive" %}selected{% endif %}>Inactive</option>
+      </select>
+      <select class="form-select form-select-sm" name="sort" style="width:auto;">
+        <option value="newest" {% if filters.sort == "newest" or not filters.sort %}selected{% endif %}>Newest first</option>
+        <option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>Oldest first</option>
+        <option value="username" {% if filters.sort == "username" %}selected{% endif %}>Username</option>
+        <option value="role" {% if filters.sort == "role" %}selected{% endif %}>Role</option>
+      </select>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      {% if query or filters.role or filters.status %}<a class="btn btn-sm btn-outline-secondary" href=".">Reset</a>{% endif %}
+    </form>
+    <span class="text-muted-2 small">{{ page_obj.paginator.count|intcomma }} account{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>User</th><th>Role</th><th>Status</th><th>Email</th><th>KYC</th><th>Joined</th><th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for account in page_obj %}
+          <tr>
+            <td>
+              <a href="{% url 'dashboard:user_detail' account.pk %}" class="fw-semibold">{{ account.get_full_name|default:account.username }}</a>
+              <div class="text-muted-2 small">@{{ account.username }}</div>
+            </td>
+            <td>
+              {% if account.role == "ADMIN" %}<span class="badge-soft is-accent">Admin</span>
+              {% elif account.role == "SELLER" %}<span class="badge-soft is-blue">Seller</span>
+              {% else %}<span class="badge-soft">Bidder</span>{% endif %}
+            </td>
+            <td>
+              {% if account.is_active %}<span class="badge-soft is-green">Active</span>
+              {% else %}<span class="badge-soft is-red">Inactive</span>{% endif %}
+            </td>
+            <td class="small">
+              {{ account.email|default:"—" }}
+              {% if account.is_email_verified %}<i class="bi bi-patch-check-fill text-primary" title="Email verified"></i>{% endif %}
+            </td>
+            <td>
+              {% if account.is_kyc_verified %}<span class="badge-soft is-green">Verified</span>
+              {% else %}<span class="badge-soft">Unverified</span>{% endif %}
+            </td>
+            <td class="small text-muted-2">{{ account.date_joined|date:"M j, Y" }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:user_detail' account.pk %}">View</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><i class="bi bi-people"></i>No accounts match your filters.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-panel__body pt-0">{% include "dashboard/_pagination.html" %}</div>
+</div>
+{% endblock %}

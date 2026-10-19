@@ -56,6 +56,12 @@
     if (minBidEl && data.minimum_next_bid) minBidEl.setAttribute("min", data.minimum_next_bid);
     if (bidsCountEl && data.total_bids !== undefined) bidsCountEl.textContent = data.total_bids;
     if (biddersCountEl && data.total_bidders !== undefined) biddersCountEl.textContent = data.total_bidders;
+
+    // Keep the client countdown honest by re-syncing with the server clock.
+    const countdownEl = document.querySelector(".countdown-strip");
+    if (countdownEl && data.time_remaining_seconds > 0) {
+      countdownEl.dataset.countdown = data.time_remaining_seconds;
+    }
   }
 
   function pollStatus() {
@@ -63,13 +69,18 @@
     if (!container) return;
     const slug = container.dataset.slug;
 
-    setInterval(() => {
+    const interval = setInterval(() => {
       fetch(`/bids/${slug}/status/ajax/`)
         .then((res) => res.json())
         .then((data) => {
           applyStatus(data);
           if (data.status === "CLOSED") {
-            window.location.reload();
+            clearInterval(interval);
+            // Reload exactly once so we don't loop forever on a closed auction.
+            if (!window.__auctionClosedHandled) {
+              window.__auctionClosedHandled = true;
+              window.location.reload();
+            }
           }
         })
         .catch(() => {});

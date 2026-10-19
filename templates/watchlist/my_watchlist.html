@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}My Watchlist — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="section-heading"><div><div class="eyebrow">Bidder</div><h2>My Watchlist</h2></div></div>
+
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-brass w-100" type="submit">Filter</button>
+    </div>
+  </form>
+
+  <div class="row g-4">
+    {% for item in watchlist_items %}
+      <div class="col-sm-6 col-lg-3">
+        {% include "products/_product_card.html" with product=item.product %}
+        <div class="mt-2 d-flex justify-content-between align-items-center" data-watch-scope>
+          <span class="text-cream-dim small">
+            <span class="js-watchers-count">{{ item.product.watchlisted_by.count }}</span> watching
+          </span>
+          {% include "watchlist/_watch_button.html" with product=item.product watching=True %}
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-cream-dim">
+        You aren't watching any auctions{% if status_filter %} with that status{% endif %} yet.
+      </p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

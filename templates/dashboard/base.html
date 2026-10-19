@@ -1,0 +1,53 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ page_title|default:"Admin" }} — LotHouse Admin{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+   <link href="{% static 'css/style.css' %}" rel="stylesheet">
+   <link href="{% static 'css/admin.css' %}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-body">
+<div class="admin-shell" id="adminShell">
+  {% include "dashboard/_sidebar.html" %}
+
+  <div class="admin-main">
+    {% include "dashboard/_navbar.html" %}
+
+    <main class="admin-content">
+      {% include "dashboard/_messages.html" %}
+
+      {% if breadcrumbs %}
+        <nav aria-label="breadcrumb">
+          <ol class="admin-breadcrumb">
+            <li><a href="{% url 'dashboard:overview' %}"><i class="bi bi-house-door"></i> Admin</a></li>
+            {% for crumb in breadcrumbs %}
+              <li>{% if crumb.url %}<a href="{% url crumb.url %}">{{ crumb.label }}</a>{% else %}{{ crumb.label }}{% endif %}</li>
+            {% endfor %}
+          </ol>
+        </nav>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="admin-footer">
+      &copy; {% now "Y" %} LotHouse Admin &middot; Django {{ request.META.SERVER_NAME|default:"LotHouse" }} &middot;
+      <a href="{% url 'core:home' %}" target="_blank" rel="noopener">View public site</a>
+    </footer>
+  </div>
+</div>
+
+<div class="admin-backdrop" id="adminBackdrop"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/admin.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

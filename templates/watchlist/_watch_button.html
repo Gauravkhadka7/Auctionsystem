@@ -1,0 +1,17 @@
+{% comment %}
+Reusable Watch / Watching toggle. Expects:
+  product  — a Product instance (required)
+  watching — bool, whether the current user is already watching it
+Renders a real POST form so it still works without JS; static/js/watchlist.js
+upgrades it to an AJAX toggle when available.
+{% endcomment %}
+<form class="watch-toggle d-inline-block" method="post"
+      action="{% url 'watchlist:toggle' product.slug %}"
+      data-watching="{% if watching %}1{% else %}0{% endif %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path }}">
+  <button type="submit" class="btn btn-sm {% if watching %}btn-brass{% else %}btn-outline-cream{% endif %}">
+    <i class="bi {% if watching %}bi-bookmark-check-fill{% else %}bi-bookmark{% endif %}"></i>
+    <span class="watch-label">{% if watching %}Watching{% else %}Watch{% endif %}</span>
+  </button>
+</form>

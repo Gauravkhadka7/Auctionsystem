@@ -1,0 +1,69 @@
+{% load static %}
+<aside class="admin-sidebar" id="adminSidebar">
+  <div class="admin-sidebar__brand">
+    <span class="brand-mark">L</span>
+    <span class="brand-text">
+      <span class="brand-name d-block">LotHouse</span>
+      <span class="brand-sub">Admin Panel</span>
+    </span>
+  </div>
+
+  <nav class="admin-nav">
+    <div class="admin-nav__section">Main</div>
+    <a class="admin-nav__link {% if active_nav == 'overview' %}active{% endif %}" href="{% url 'dashboard:overview' %}">
+      <i class="bi bi-grid-1x2"></i><span>Overview</span>
+    </a>
+
+    <div class="admin-nav__section">People</div>
+    <a class="admin-nav__link {% if active_nav == 'users' %}active{% endif %}" href="{% url 'dashboard:users' %}">
+      <i class="bi bi-people"></i><span>User Management</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'sellers' %}active{% endif %}" href="{% url 'dashboard:sellers' %}">
+      <i class="bi bi-shop"></i><span>Seller Management</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'bidders' %}active{% endif %}" href="{% url 'dashboard:bidders' %}">
+      <i class="bi bi-person-badge"></i><span>Bidder Management</span>
+    </a>
+
+    <div class="admin-nav__section">Marketplace</div>
+    <a class="admin-nav__link {% if active_nav == 'products' %}active{% endif %}" href="{% url 'dashboard:products' %}">
+      <i class="bi bi-box-seam"></i><span>Products &amp; Listings</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'auctions' %}active{% endif %}" href="{% url 'dashboard:auctions' %}">
+      <i class="bi bi-hammer"></i><span>Auction Management</span>
+    </a>
+    <a class="admin-nav__link" href="{% url 'categories:list' %}">
+      <i class="bi bi-tags"></i><span>Category Management</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'bids' %}active{% endif %}" href="{% url 'dashboard:bids' %}">
+      <i class="bi bi-clock-history"></i><span>Bid History</span>
+    </a>
+
+    <div class="admin-nav__section">Fulfilment</div>
+    <a class="admin-nav__link {% if active_nav == 'winners' %}active{% endif %}" href="{% url 'dashboard:winners' %}">
+      <i class="bi bi-trophy"></i><span>Winner Verification</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'payments' %}active{% endif %}" href="{% url 'dashboard:payments' %}">
+      <i class="bi bi-credit-card"></i><span>Payment Verification</span>
+    </a>
+
+    <div class="admin-nav__section">Insights</div>
+    <a class="admin-nav__link {% if active_nav == 'reports' %}active{% endif %}" href="{% url 'dashboard:reports' %}">
+      <i class="bi bi-graph-up-arrow"></i><span>Reports &amp; Analytics</span>
+    </a>
+    <a class="admin-nav__link {% if active_nav == 'activity' %}active{% endif %}" href="{% url 'dashboard:activity' %}">
+      <i class="bi bi-bell"></i><span>Notifications &amp; Activity</span>
+    </a>
+
+    <div class="admin-nav__section">Account</div>
+    <a class="admin-nav__link" href="{% url 'accounts:profile' %}">
+      <i class="bi bi-person-circle"></i><span>My Profile</span>
+    </a>
+    <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+      {% csrf_token %}
+      <button type="submit" class="admin-nav__link w-100 border-0 bg-transparent text-start">
+        <i class="bi bi-box-arrow-right"></i><span>Logout</span>
+      </button>
+    </form>
+  </nav>
+</aside>

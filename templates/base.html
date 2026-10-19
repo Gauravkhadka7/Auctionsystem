@@ -18,7 +18,7 @@
 <nav class="navbar navbar-expand-lg navbar-auction sticky-top py-3">
   <div class="container">
     <a class="navbar-brand" href="{% url 'core:home' %}"><span class="brand-mark">Lot</span>House</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="border-color: var(--hairline)">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
@@ -32,8 +32,8 @@
       </ul>
       <ul class="navbar-nav align-items-lg-center gap-lg-2">
         {% if user.is_authenticated %}
-          {% if user.is_seller %}
-            <li class="nav-item"><a class="btn btn-outline-cream btn-sm" href="{% url 'products:add' %}">+ List an item</a></li>
+          {% if user.is_bidder %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'watchlist:my_watchlist' %}"><i class="bi bi-bookmark"></i> Watchlist</a></li>
           {% endif %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown">
@@ -60,7 +60,8 @@
               <li><a class="dropdown-item" href="{% url 'core:dashboard_redirect' %}">Dashboard</a></li>
               <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">My Profile</a></li>
               {% if user.is_bidder %}<li><a class="dropdown-item" href="{% url 'winners:my_wins' %}">My Winnings</a></li>{% endif %}
-              {% if user.is_seller %}<li><a class="dropdown-item" href="{% url 'products:my_products' %}">My Products</a></li>{% endif %}
+              {% if user.is_bidder %}<li><a class="dropdown-item" href="{% url 'watchlist:my_watchlist' %}">My Watchlist</a></li>{% endif %}
+              {% if user.is_seller or user.is_superuser %}<li><a class="dropdown-item" href="{% url 'products:my_products' %}">My Listings</a></li>{% endif %}
               <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">Change Password</a></li>
               <li><hr class="dropdown-divider"></li>
               <li>
@@ -73,7 +74,7 @@
           </li>
         {% else %}
           <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
-          <li class="nav-item"><a class="btn btn-brass btn-sm" href="{% url 'accounts:register' %}">Register</a></li>
+          <li class="nav-item"><a class="btn btn-bid btn-sm" href="{% url 'accounts:register' %}">Register</a></li>
         {% endif %}
       </ul>
     </div>
@@ -85,7 +86,7 @@
     {% for message in messages %}
       <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
         {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     {% endfor %}
   {% endif %}
@@ -99,12 +100,12 @@
   <div class="container">
     <div class="row g-4">
       <div class="col-lg-4">
-        <h6 class="mb-2"><span style="color: var(--brass)">Lot</span>House</h6>
+        <h6 class="mb-2"><span style="color: var(--color-accent)">Lot</span>House</h6>
         <p class="text-cream-dim small mb-3">A transparent, blockchain-curious take on online auctions — built as a student portfolio project. Bid with confidence, sell with reach.</p>
         <form method="post" action="{% url 'core:newsletter_signup' %}" class="d-flex gap-2">
           {% csrf_token %}
           <input type="email" name="email" class="form-control form-control-sm" placeholder="you@example.com" required>
-          <button class="btn btn-brass btn-sm text-nowrap" type="submit">Subscribe</button>
+          <button class="btn btn-bid btn-sm text-nowrap" type="submit">Subscribe</button>
         </form>
       </div>
       <div class="col-lg-2 col-6">
@@ -138,7 +139,7 @@
         </ul>
       </div>
     </div>
-    <hr style="border-color: var(--hairline);" class="my-4">
+    <hr style="border-color: rgba(255,255,255,0.15);" class="my-4">
     <p class="small mb-0 text-cream-dim">&copy; {% now "Y" %} LotHouse. Built with Django. All rights reserved.</p>
   </div>
 </footer>
@@ -146,6 +147,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/countdown.js' %}"></script>
 <script src="{% static 'js/formset.js' %}"></script>
+<script src="{% static 'js/watchlist.js' %}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

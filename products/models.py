@@ -61,6 +61,21 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
     admin_remarks = models.TextField(blank=True)
 
+    view_count = models.PositiveIntegerField(default=0)
+    extension_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Times auction_end was pushed back by a last-second bid.",
+    )
+
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    location_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Human-readable location, e.g. 'Kathmandu, Nepal'",
+    )
+    pickup_available = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

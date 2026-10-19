@@ -1,0 +1,14 @@
+{% autoescape off %}Hello {{ user.get_full_name|default:user.username }},
+
+Thanks for creating a {{ site_name }} account. Please confirm your email address to activate it.
+
+Verify your email:
+{{ verification_url }}
+
+Or enter this code on the verification page:
+{{ code }}
+
+This link and code expire in {{ expires_hours }} hour{{ expires_hours|pluralize }}. If you didn't create a {{ site_name }} account, you can safely ignore this email.
+
+— The {{ site_name }} team
+{% endautoescape %}

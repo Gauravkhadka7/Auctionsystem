@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from bids.models import Bid
 from categories.models import Category
 from core.permissions import seller_required
+from . import services
 from .forms import ProductForm, ProductImageFormSet, ProductSpecificationFormSet, CommentForm
 from .models import Product, Comment
 
@@ -56,8 +57,10 @@ def product_detail(request, slug):
     comment_form = CommentForm()
 
     user_bid_count = 0
+    is_watching = False
     if request.user.is_authenticated:
         user_bid_count = product.bids.filter(bidder=request.user).count()
+        is_watching = product.watchlisted_by.filter(user=request.user).exists()
 
     return render(request, "products/product_detail.html", {
         "product": product,
@@ -65,6 +68,7 @@ def product_detail(request, slug):
         "comments": comments,
         "comment_form": comment_form,
         "user_bid_count": user_bid_count,
+        "is_watching": is_watching,
     })
 
 
@@ -86,36 +90,30 @@ def my_products(request):
 
 
 @seller_required
-def add_product(request):
+def product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.seller = request.user
-            product.status = Product.Status.PENDING
-            product.save()
-
-            image_formset = ProductImageFormSet(request.POST, request.FILES, instance=product)
-            spec_formset = ProductSpecificationFormSet(request.POST, instance=product)
-            if image_formset.is_valid():
-                image_formset.save()
-            if spec_formset.is_valid():
-                spec_formset.save()
-
-            messages.success(request, "Product submitted for admin approval.")
+        image_formset = ProductImageFormSet(request.POST, request.FILES)
+        spec_formset = ProductSpecificationFormSet(request.POST)
+        if form.is_valid() and image_formset.is_valid() and spec_formset.is_valid():
+            services.create_product_listing(
+                seller=request.user,
+                form=form,
+                image_formset=image_formset,
+                spec_formset=spec_formset,
+            )
+            messages.success(request, "Your item was submitted and is awaiting approval.")
             return redirect("products:my_products")
     else:
         form = ProductForm()
         image_formset = ProductImageFormSet()
         spec_formset = ProductSpecificationFormSet()
-        return render(request, "products/product_form.html", {
-            "form": form, "image_formset": image_formset, "spec_formset": spec_formset,
-            "is_edit": False,
-        })
 
     return render(request, "products/product_form.html", {
-        "form": form, "image_formset": ProductImageFormSet(instance=product),
-        "spec_formset": ProductSpecificationFormSet(instance=product), "is_edit": False,
+        "form": form,
+        "image_formset": image_formset,
+        "spec_formset": spec_formset,
+        "is_edit": False,
     })
 
 

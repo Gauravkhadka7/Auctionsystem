@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="card-panel">
+  <div class="card-panel__head">
+    <form class="filter-bar flex-grow-1" method="get">
+      <input class="form-control form-control-sm" type="search" name="q" placeholder="Listing or bidder…" value="{{ query }}" style="min-width:180px;">
+      <select class="form-select form-select-sm" name="verification" style="width:auto;">
+        <option value="">Any verification</option>
+        <option value="submitted" {% if filters.verification == "submitted" %}selected{% endif %}>Documents submitted</option>
+        <option value="pending" {% if filters.verification == "pending" %}selected{% endif %}>Not submitted</option>
+        <option value="verified" {% if filters.verification == "verified" %}selected{% endif %}>KYC verified</option>
+      </select>
+      <select class="form-select form-select-sm" name="payment" style="width:auto;">
+        <option value="">Any payment</option>
+        <option value="pending" {% if filters.payment == "pending" %}selected{% endif %}>Payment pending</option>
+        <option value="verified" {% if filters.payment == "verified" %}selected{% endif %}>Payment verified</option>
+      </select>
+      <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-funnel"></i> Filter</button>
+      <a class="btn btn-sm btn-outline-secondary" href=".">Reset</a>
+    </form>
+    <span class="text-muted-2 small">{{ page_obj.paginator.count|intcomma }} winner{{ page_obj.paginator.count|pluralize }}</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Auction</th><th>Winner</th><th class="text-end">Winning bid</th><th>Verification</th><th>Payment</th><th>Closed</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for winner in page_obj %}
+          <tr>
+            <td><a href="{% url 'dashboard:product_detail' winner.product.pk %}" class="fw-semibold">{{ winner.product.title|truncatechars:38 }}</a></td>
+            <td><a href="{% url 'dashboard:user_detail' winner.bidder.pk %}">{{ winner.bidder.username }}</a></td>
+            <td class="text-end fw-semibold">{{ winner.winning_price|floatformat:2 }}</td>
+            <td>
+              {% if winner.bidder.is_kyc_verified %}<span class="badge-soft is-green">Verified</span>
+              {% elif winner.is_verification_submitted %}<span class="badge-soft is-amber">Awaiting review</span>
+              {% else %}<span class="badge-soft">Not submitted</span>{% endif %}
+            </td>
+            <td>{% if winner.is_payment_verified %}<span class="badge-soft is-green">Verified</span>{% else %}<span class="badge-soft is-amber">Pending</span>{% endif %}</td>
+            <td class="small text-muted-2">{{ winner.created_at|date:"M j, Y" }}</td>
+            <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:winner_detail' winner.pk %}">Review</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state"><i class="bi bi-trophy"></i>No winners match your filters.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-panel__body pt-0">{% include "dashboard/_pagination.html" %}</div>
+</div>
+{% endblock %}

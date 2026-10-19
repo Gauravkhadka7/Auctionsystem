@@ -40,7 +40,7 @@
           <td>{{ product.seller.username }}</td>
           <td>
             {% if product.status == "LIVE" %}<span class="badge-status badge-live">Live</span>
-            {% elif product.status == "PENDING" %}<span class="badge-status badge-upcoming">Pending</span>
+            {% elif product.status == "PENDING" %}<span class="badge-status badge-pending">Pending</span>
             {% else %}<span class="badge-status badge-closed">{{ product.get_status_display }}</span>{% endif %}
           </td>
           <td class="text-brass">{{ product.current_price }}</td>

@@ -13,6 +13,7 @@ portfolio piece, coursework, or internship take-home.
 
 - Python 3.12, Django 6.0
 - Bootstrap 5 + vanilla JS (AJAX bidding, live countdown, dynamic formsets)
+- Django Channels + Daphne for live WebSocket auction updates (HTTP polling fallback)
 - SQLite by default, one env var away from PostgreSQL
 - django-crispy-forms + crispy-bootstrap5 for form rendering
 - Pillow for image uploads
@@ -54,13 +55,42 @@ automatically — not included by default to keep dependencies minimal).
 Sensible defaults exist for everything so the app runs with zero
 configuration in development.
 
+### Sending verification emails through Gmail
+
+By default mail is printed to the console. To send real email via Gmail SMTP:
+
+1. Enable 2-Step Verification on the Google account, then create an
+   **App Password** (a normal account password is rejected by Gmail SMTP).
+2. In `.env` set:
+
+   ```env
+   EMAIL_USE_SMTP=True
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USE_TLS=True
+   EMAIL_HOST_USER=you@gmail.com
+   EMAIL_HOST_PASSWORD=your-16-char-app-password
+   DEFAULT_FROM_EMAIL=you@gmail.com
+   SITE_BASE_URL=https://your-domain.example
+   ```
+
+`SITE_BASE_URL` is the origin used in verification links; when set, links never
+depend on the incoming `Host` header. No credentials are ever hardcoded.
+
 ## What's included
 
 **Apps:** `accounts`, `categories`, `products`, `auctions`, `bids`, `winners`,
 `payments`, `notifications`, `core`.
 
 - **Custom user model** (`accounts.User`) with `ADMIN` / `SELLER` / `BIDDER`
-  roles, email OTP verification, and a `Profile` model for KYC/payout details.
+  roles, email verification, and a `Profile` model for KYC/payout details.
+- **Email verification on registration**: new accounts start unverified and
+  can't log in until they confirm their address. Registration emails a signed,
+  time-limited verification **link** (built with Django's token machinery) plus
+  a 6-digit **code** for the manual OTP screen. Verified tokens are single-use;
+  links expire (`EMAIL_VERIFICATION_TIMEOUT`). A resend screen is cooldown- and
+  rate-limited and never reveals whether an address has an account. Enforcement
+  happens server-side in `accounts.backends.EmailOrUsernameModelBackend`.
 - **Product = auction listing.** Each `Product` carries its own auction
   schedule (`auction_start`, `auction_end`), pricing (`starting_price`,
   `reserve_price`, `bid_increment`, `current_price`), and lifecycle `status`
@@ -80,8 +110,16 @@ configuration in development.
   `select_for_update()` transaction to avoid race conditions between two
   simultaneous bidders; `bids/views.py` exposes both a plain-form endpoint
   and a JSON endpoint used by the AJAX widget on the product page
-  (`static/js/bidding.js`), which also polls a status endpoint every 5s so
-  the price/timer stay fresh for everyone watching.
+  (`static/js/bidding.js`), which also polls a status endpoint every 5s as a
+  fallback so the price/timer stay fresh for everyone watching.
+- **Live updates (WebSocket + polling)**: bid placement and auction
+  status changes are broadcast to watchers over Channels
+  (`auctions/consumers.py`, `auctions/routing.py`, `auctions/broadcast.py`;
+  client in `static/js/auction_socket.js`). The client connects to
+  `/ws/auction/<slug>/`, auto-reconnects, and falls back to the HTTP polling
+  above if WebSockets are unavailable. The default channel layer is
+  in-memory (single process); set `REDIS_URL` for a shared
+  `channels_redis` layer across workers.
 - **Winner → verification → payment flow**: `winners.Winner` is created
   automatically when an auction closes (if the reserve price was met);
   the winner submits KYC + payout details, then a `payments.Payment` record
@@ -108,14 +146,19 @@ pretending it's finished:
   into `core` or a new `reports` app using `openpyxl` / `reportlab`.
 - **Payment gateway integration** — eSewa/Khalti are modeled as payment
   *methods* with manual admin verification, not live API integrations.
-- **Real email delivery** — defaults to the console backend; flip
-  `EMAIL_BACKEND` in `.env` to SMTP for real sending.
+- **Real email delivery** — defaults to the console backend. For real Gmail
+  delivery, set `EMAIL_USE_SMTP=True` (or `EMAIL_BACKEND`) plus
+  `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` (a Google **App Password**),
+  `DEFAULT_FROM_EMAIL`, and `SITE_BASE_URL` in `.env`. Console/locmem backends
+  surface the verification code/link on-page so local flows stay testable.
 - **Referral program, careers/partnerships pages** — mentioned in the
   original nav spec but not built; low-value for a portfolio demo.
 - **DRF API layer** — the app is server-rendered Django views; a REST layer
   is a natural next step if you want a separate frontend later.
-- **Test suite** — none included yet. `pytest-django` + factory_boy would be
-  the natural fit given the model structure here.
+- **Broader test coverage** — bidding validation, the auction lifecycle,
+  notifications, and the WebSocket consumer are covered by the Django test
+  suite (`python manage.py test`). `pytest-django` + factory_boy would be
+  the natural next step for expanding it.
 
 ## Project layout
 
@@ -124,14 +167,14 @@ auction_system/     # settings, root urls
 accounts/           # custom User, Profile, OTP, auth views
 categories/         # Category / SubCategory CRUD (admin-only)
 products/           # Product listing CRUD, detail page, comments
-auctions/           # lifecycle service + middleware + management command
+auctions/           # lifecycle service, middleware, WebSocket consumer/routing
 bids/                # Bid model, placement service, AJAX endpoints
 winners/            # Winner model, verification submission
 payments/           # Payment model + submission form
 notifications/      # Notification model + bell-icon dropdown
 core/               # home page, dashboards, static pages, permissions
 templates/           # all HTML templates (base.html + per-app folders)
-static/              # style.css, countdown.js, bidding.js, formset.js
+static/              # style.css, countdown.js, bidding.js, auction_socket.js, formset.js
 ```
 
 ## Switching to PostgreSQL

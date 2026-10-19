@@ -1,0 +1,130 @@
+{% extends "dashboard/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-panel">
+      <div class="card-panel__body text-center">
+        {% if profile.photo %}
+          <img src="{{ profile.photo.url }}" alt="" class="rounded-circle mb-2" style="width:88px;height:88px;object-fit:cover;">
+        {% else %}
+          <span class="admin-avatar mx-auto mb-2" style="width:88px;height:88px;font-size:2rem;">{{ account.username|slice:":1"|upper }}</span>
+        {% endif %}
+        <h3 class="mb-0">{{ account.get_full_name|default:account.username }}</h3>
+        <div class="text-muted-2 small">@{{ account.username }}</div>
+        <div class="mt-2 d-flex justify-content-center gap-1 flex-wrap">
+          {% if account.role == "ADMIN" %}<span class="badge-soft is-accent">Admin</span>
+          {% elif account.role == "SELLER" %}<span class="badge-soft is-blue">Seller</span>
+          {% else %}<span class="badge-soft">Bidder</span>{% endif %}
+          {% if account.is_active %}<span class="badge-soft is-green">Active</span>{% else %}<span class="badge-soft is-red">Inactive</span>{% endif %}
+          {% if account.is_superuser %}<span class="badge-soft is-amber">Superuser</span>{% endif %}
+        </div>
+
+        <hr>
+        <div class="text-start small">
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Email</span><span>{{ account.email|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Mobile</span><span>{{ account.mobile_number|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Email verified</span><span>{% if account.is_email_verified %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash-circle text-muted-2"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">KYC verified</span><span>{% if account.is_kyc_verified %}<i class="bi bi-check-circle-fill text-success"></i>{% else %}<i class="bi bi-dash-circle text-muted-2"></i>{% endif %}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Joined</span><span>{{ account.date_joined|date:"M j, Y" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Last login</span><span>{{ account.last_login|date:"M j, Y"|default:"—" }}</span></div>
+          <div class="d-flex justify-content-between py-1"><span class="text-muted-2">Address</span><span class="text-end">{{ profile.address|default:"—" }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    {% if profile.citizenship_document %}
+      <div class="card-panel mt-3"><div class="card-panel__body">
+        <div class="stat-card__label mb-2">KYC document</div>
+        <a class="btn btn-sm btn-outline-secondary w-100" href="{{ profile.citizenship_document.url }}" target="_blank" rel="noopener">
+          <i class="bi bi-file-earmark-text"></i> Open submitted document
+        </a>
+        <div class="text-muted-2 small mt-2">Only visible to administrators for verification.</div>
+      </div></div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card-panel">
+      <div class="card-panel__head"><h2>Account management</h2></div>
+      <div class="card-panel__body d-flex flex-wrap gap-3 align-items-end">
+        {% if account != request.user and not account.is_superuser %}
+          <form method="post" action="{% url 'dashboard:user_toggle_active' account.pk %}"
+                data-confirm="{% if account.is_active %}Deactivate{% else %}Reactivate{% endif %} {{ account.username }}?">
+            {% csrf_token %}
+            <button class="btn btn-sm {% if account.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+              <i class="bi bi-power"></i> {% if account.is_active %}Deactivate{% else %}Reactivate{% endif %}
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'dashboard:user_set_role' account.pk %}" class="d-flex gap-2 align-items-end"
+                data-confirm="Change role for {{ account.username }}?">
+            {% csrf_token %}
+            <div>
+              <label class="form-label mb-1 small">Role</label>
+              <select name="role" class="form-select form-select-sm">
+                {% for value, label in roles %}
+                  <option value="{{ value }}" {% if account.role == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button class="btn btn-sm btn-outline-primary">Update role</button>
+          </form>
+        {% else %}
+          <div class="text-muted-2 small"><i class="bi bi-shield-lock"></i> This account is protected (you can't modify your own or a superuser account).</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'dashboard:user_toggle_kyc' account.pk %}" data-confirm="Toggle KYC verification?">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-patch-check"></i> Toggle KYC</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+      <div class="col-6 col-md-3"><div class="card-panel h-100"><div class="card-panel__body"><div class="stat-card__value">{{ product_count|intcomma }}</div><div class="stat-card__label">Listings</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="card-panel h-100"><div class="card-panel__body"><div class="stat-card__value">{{ bid_count|intcomma }}</div><div class="stat-card__label">Bids</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="card-panel h-100"><div class="card-panel__body"><div class="stat-card__value">{{ win_count|intcomma }}</div><div class="stat-card__label">Wins</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="card-panel h-100"><div class="card-panel__body"><div class="stat-card__value">{{ unread_notifications|intcomma }}</div><div class="stat-card__label">Unread alerts</div></div></div></div>
+    </div>
+
+    {% if products %}
+      <div class="card-panel mt-3">
+        <div class="card-panel__head"><h2>Listings</h2></div>
+        <div class="table-wrap"><table class="admin-table">
+          <thead><tr><th>Title</th><th>Status</th><th class="text-end">Current</th></tr></thead>
+          <tbody>
+            {% for product in products %}
+              <tr>
+                <td><a href="{% url 'dashboard:product_detail' product.pk %}">{{ product.title|truncatechars:40 }}</a></td>
+                <td>{% include "dashboard/_status_badge.html" with status=product.status label=product.get_status_display %}</td>
+                <td class="text-end">{{ product.current_price|default:product.starting_price|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      </div>
+    {% endif %}
+
+    {% if wins %}
+      <div class="card-panel mt-3">
+        <div class="card-panel__head"><h2>Auctions won</h2></div>
+        <div class="table-wrap"><table class="admin-table">
+          <thead><tr><th>Auction</th><th>Winning bid</th><th>Payment</th><th></th></tr></thead>
+          <tbody>
+            {% for win in wins %}
+              <tr>
+                <td>{{ win.product.title|truncatechars:40 }}</td>
+                <td>{{ win.winning_price|floatformat:2 }}</td>
+                <td>{% if win.is_payment_verified %}<span class="badge-soft is-green">Verified</span>{% else %}<span class="badge-soft is-amber">Pending</span>{% endif %}</td>
+                <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'dashboard:winner_detail' win.pk %}">Review</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

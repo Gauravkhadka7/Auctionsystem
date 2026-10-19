@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Email verified — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 460px;">
+  <div class="card-panel p-4 text-center">
+    <i class="bi bi-patch-check-fill" style="font-size: 2.75rem; color: var(--color-accent);"></i>
+    <h2 class="mt-2 mb-1">
+      {% if already_verified %}Email already verified{% else %}Email verified{% endif %}
+    </h2>
+    <p class="text-cream-dim mb-4">
+      {% if already_verified %}
+        This email address has already been confirmed. You can log in right away.
+      {% else %}
+        Thanks for confirming your email address
+        {% if target_user %}(<strong>{{ target_user.email }}</strong>){% endif %}.
+        Your account is now active.
+      {% endif %}
+    </p>
+    {% if user.is_authenticated %}
+      <a href="{% url 'core:dashboard_redirect' %}" class="btn btn-brass w-100">Go to my dashboard</a>
+    {% else %}
+      <a href="{% url 'accounts:login' %}" class="btn btn-brass w-100">Log in</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

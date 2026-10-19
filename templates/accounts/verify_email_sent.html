@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Check your email — LotHouse{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width: 520px;">
+  <div class="card-panel p-4">
+    <div class="text-center mb-4">
+      <i class="bi bi-envelope-check" style="font-size: 2.5rem; color: var(--color-accent);"></i>
+      <h2 class="mt-2 mb-1">Check your inbox</h2>
+      <p class="text-cream-dim mb-0">
+        We've sent a verification link to
+        {% if target_email %}<strong>{{ target_email }}</strong>{% else %}your email address{% endif %}.
+      </p>
+    </div>
+
+    <div class="alert alert-info small" role="alert">
+      Click the link in the email to activate your account. Can't find it?
+      Please check your <strong>spam or junk</strong> folder before resending.
+    </div>
+
+    {% if dev_code or dev_url %}
+      <div class="alert alert-warning small" role="alert">
+        <strong>Development build:</strong> email is printed to the console, not delivered.
+        {% if dev_code %}Your code is <span class="fw-bold">{{ dev_code }}</span>.{% endif %}
+        {% if dev_url %}<br>Verification link: <a href="{{ dev_url }}">{{ dev_url }}</a>{% endif %}
+      </div>
+    {% endif %}
+
+    <hr style="border-color: var(--color-border);">
+
+    <p class="small text-cream-dim mb-2">Didn't get the email?</p>
+    <form method="post" action="{% url 'accounts:resend_verification' %}">
+      {% csrf_token %}
+      <div class="input-group">
+        <input type="email" name="email" class="form-control" placeholder="you@example.com"
+               value="{{ target_email|default:'' }}" required>
+        <button class="btn btn-brass" type="submit">Resend email</button>
+      </div>
+    </form>
+
+    <div class="text-center mt-3 small">
+      <a href="{% url 'accounts:login' %}">Back to login</a>
+      {% if target_user %}
+        &nbsp;·&nbsp;
+        <a href="{% url 'accounts:verify_email' target_user.id %}">Enter code manually</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

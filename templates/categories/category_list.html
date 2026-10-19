@@ -18,7 +18,7 @@
         <tr>
           <td>{{ cat.name }}</td>
           <td class="text-cream-dim small">{% for s in cat.subcategories.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
-          <td>{% if cat.is_active %}<span class="badge-status badge-live">Active</span>{% else %}<span class="badge-status badge-closed">Inactive</span>{% endif %}</td>
+          <td>{% if cat.is_active %}<span class="badge-status badge-success">Active</span>{% else %}<span class="badge-status badge-closed">Inactive</span>{% endif %}</td>
           <td class="text-end">
             <a href="{% url 'categories:edit' cat.pk %}" class="btn btn-sm btn-outline-cream">Edit</a>
             <a href="{% url 'categories:delete' cat.pk %}" class="btn btn-sm btn-outline-cream" onclick="return confirm('Delete this category?');">Delete</a>

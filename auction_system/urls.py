@@ -6,6 +6,7 @@ from django.urls import path, include
 urlpatterns = [
     path("django-admin/", admin.site.urls),  # built-in Django admin (superuser)
     path("", include("core.urls")),
+    path("dashboard/", include("dashboard.urls")),
     path("accounts/", include("accounts.urls")),
     path("categories/", include("categories.urls")),
     path("products/", include("products.urls")),
@@ -13,6 +14,7 @@ urlpatterns = [
     path("winners/", include("winners.urls")),
     path("payments/", include("payments.urls")),
     path("notifications/", include("notifications.urls")),
+    path("watchlist/", include("watchlist.urls")),
 ]
 
 if settings.DEBUG:
