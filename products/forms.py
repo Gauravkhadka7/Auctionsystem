@@ -27,7 +27,7 @@ def validate_image_upload(image):
         image.seek(0)
         Image.open(image).verify()
     except (UnidentifiedImageError, OSError, ValueError):
-        raise ValidationError("That file isn't a valid image.")
+        raise ValidationError("That file isn't a valid image.") from None
     finally:
         image.seek(0)
 

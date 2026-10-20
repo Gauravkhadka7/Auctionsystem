@@ -127,6 +127,9 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+            # Give competing writers time to serialise instead of failing
+            # immediately with "database is locked" during local/dev runs.
+            "OPTIONS": {"timeout": 20},
         }
     }
 
@@ -212,7 +215,20 @@ EMAIL_VERIFICATION_RESEND_MAX_PER_HOUR = int(os.environ.get("EMAIL_VERIFICATION_
 # Auction business rules
 # -------------------------------------------------------------------
 MINIMUM_BID_INCREMENT = 10  # fallback increment if a product doesn't define one
-AUCTION_ENDING_SOON_MINUTES = 15  # threshold to flag "ending soon" + notify
+
+# Seconds before the scheduled close in which a newly accepted bid counts as
+# "sniping" and pushes the deadline back instead of ending the auction unfairly.
+SNIP_WINDOW_SECONDS = int(os.environ.get("SNIP_WINDOW_SECONDS", 60))
+
+# How far the deadline moves when a sniping bid lands (minutes).
+AUCTION_EXTENSION_MINUTES = int(os.environ.get("AUCTION_EXTENSION_MINUTES", 2))
+
+# Cap on automatic extensions so an auction can't be postponed forever by a
+# scripted bidder. 0 disables anti-sniping entirely.
+AUCTION_MAX_EXTENSIONS = int(os.environ.get("AUCTION_MAX_EXTENSIONS", 3))
+
+# Threshold for the "auction ending soon" reminder (see auctions.services).
+AUCTION_ENDING_SOON_MINUTES = int(os.environ.get("AUCTION_ENDING_SOON_MINUTES", 15))
 
 # -------------------------------------------------------------------
 # Messages framework -> bootstrap alert classes

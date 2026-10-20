@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 from django.utils.text import slugify
 
 
@@ -8,6 +7,11 @@ class Category(models.Model):
     slug = models.SlugField(max_length=120, unique=True, blank=True)
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=50, blank=True, help_text="Bootstrap icon class, e.g. bi-laptop")
+    image = models.ImageField(
+        upload_to="categories/",
+        blank=True,
+        help_text="Optional background/cover image used when browsing categories.",
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -22,9 +26,6 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse("categories:detail", args=[self.slug])
 
 
 class SubCategory(models.Model):

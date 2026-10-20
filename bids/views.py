@@ -7,7 +7,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
 from products.models import Product
-from .services import place_bid, BidError
+
+from .services import BidError, place_bid
 
 
 @login_required
@@ -35,6 +36,7 @@ def place_bid_view(request, slug):
 def place_bid_ajax(request, slug):
     """AJAX endpoint used by the live bidding widget on the product page."""
     product = get_object_or_404(Product, slug=slug)
+    deadline_before = product.auction_end
     try:
         amount = Decimal(request.POST.get("amount", "0"))
     except InvalidOperation:
@@ -54,6 +56,13 @@ def place_bid_ajax(request, slug):
         "total_bidders": product.total_bidders,
         "leader": bid.bidder.username,
         "bid_time": bid.created_at.strftime("%b %d, %Y %I:%M %p"),
+        # Anti-sniping feedback: lets the client restart the countdown from the
+        # (possibly extended) server-side deadline without reloading.
+        "status": product.status,
+        "time_remaining_seconds": product.time_remaining_seconds,
+        "auction_end": product.auction_end.isoformat(),
+        "extension_count": product.extension_count,
+        "extended": product.auction_end != deadline_before,
     })
 
 
@@ -68,4 +77,6 @@ def bid_status_ajax(request, slug):
         "total_bids": product.total_bids,
         "total_bidders": product.total_bidders,
         "time_remaining_seconds": product.time_remaining_seconds,
+        "auction_end": product.auction_end.isoformat(),
+        "extension_count": product.extension_count,
     })

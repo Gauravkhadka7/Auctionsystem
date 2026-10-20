@@ -10,7 +10,8 @@ also flips ``Winner.is_payment_verified`` (the application's existing flag for
 from django.db import transaction
 from django.utils import timezone
 
-from notifications.models import Notification
+from notifications.broadcast import notify
+
 from .models import Payment
 
 
@@ -33,9 +34,9 @@ def verify_payment(payment):
         winner.is_payment_verified = True
         winner.save(update_fields=["is_payment_verified"])
 
-    Notification.objects.create(
-        user=payment.payer,
-        message=f'Your payment of {payment.amount} for "{winner.product.title}" was verified.',
+    notify(
+        payment.payer,
+        f'Your payment of {payment.amount} for "{winner.product.title}" was verified.',
         link=winner.product.get_absolute_url(),
     )
     return payment
@@ -51,12 +52,10 @@ def reject_payment(payment, reason=""):
     payment.verified_at = timezone.now()
     payment.save(update_fields=["status", "verified_at"])
 
-    Notification.objects.create(
-        user=payment.payer,
-        message=(
-            f'Your payment of {payment.amount} for "{payment.winner.product.title}" was rejected. '
-            f'{reason or "Please contact support or re-submit."}'
-        ),
+    notify(
+        payment.payer,
+        f'Your payment of {payment.amount} for "{payment.winner.product.title}" was rejected. '
+        f'{reason or "Please contact support or re-submit."}',
         link=payment.winner.product.get_absolute_url(),
     )
     return payment

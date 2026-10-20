@@ -8,7 +8,8 @@ submission flag so the winner can re-submit.
 """
 from django.db import transaction
 
-from notifications.models import Notification
+from notifications.broadcast import notify
+
 from .models import Winner
 
 
@@ -27,9 +28,9 @@ def verify_winner(winner):
         bidder.is_kyc_verified = True
         bidder.save(update_fields=["is_kyc_verified"])
 
-    Notification.objects.create(
-        user=bidder,
-        message=f'Your identity verification for "{winner.product.title}" was approved. You can now submit payment.',
+    notify(
+        bidder,
+        f'Your identity verification for "{winner.product.title}" was approved. You can now submit payment.',
         link=winner.product.get_absolute_url(),
     )
     return winner
@@ -44,12 +45,10 @@ def reject_winner_verification(winner, reason=""):
     winner.is_verification_submitted = False
     winner.save(update_fields=["is_verification_submitted"])
 
-    Notification.objects.create(
-        user=winner.bidder,
-        message=(
-            f'Your verification for "{winner.product.title}" needs attention. '
-            f'{reason or "Please re-submit your documents."}'
-        ),
+    notify(
+        winner.bidder,
+        f'Your verification for "{winner.product.title}" needs attention. '
+        f'{reason or "Please re-submit your documents."}',
         link=winner.product.get_absolute_url(),
     )
     return winner

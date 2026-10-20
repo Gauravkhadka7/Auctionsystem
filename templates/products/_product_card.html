@@ -19,7 +19,10 @@
         <span class="text-cream-dim small">{{ product.category.name }}</span>
       </div>
       <div class="lot-title">{{ product.title }}</div>
-      <div class="lot-meta mb-2">by {{ product.seller.first_name|default:product.seller.username }}</div>
+      <div class="lot-meta mb-2">
+        by {{ product.seller.first_name|default:product.seller.username }}
+        <span class="text-cream-dim"><i class="bi bi-eye"></i> {{ product.view_count }} view{{ product.view_count|pluralize }}</span>
+      </div>
 
       <div class="d-flex justify-content-between align-items-end">
         <div>

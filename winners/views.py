@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.forms import VerificationDocumentForm
 from accounts.models import Profile
 from core.permissions import bidder_required
+
 from .models import Winner
 
 

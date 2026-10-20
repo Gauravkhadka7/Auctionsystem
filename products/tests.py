@@ -12,6 +12,7 @@ from django.utils import timezone
 from PIL import Image
 
 from categories.models import Category
+
 from .forms import validate_image_upload
 from .models import Product
 
@@ -160,3 +161,77 @@ class StartSellingTestCase(TestCase):
         with patch("products.forms.MAX_IMAGE_SIZE_MB", 0):
             with self.assertRaises(ValidationError):
                 validate_image_upload(make_image())
+
+
+class ViewCounterTestCase(TestCase):
+    """Public listing views are counted atomically; the seller's own visits
+    are not."""
+
+    def setUp(self):
+        self.seller = User.objects.create_user(
+            "vc_seller", password="pw12345!", role=User.Role.SELLER
+        )
+        self.visitor = User.objects.create_user(
+            "vc_visitor", password="pw12345!", role=User.Role.BIDDER
+        )
+        self.category = Category.objects.create(name="Views")
+        now = timezone.now()
+        self.product = Product.objects.create(
+            seller=self.seller,
+            category=self.category,
+            title="Viewed Lot",
+            description="d",
+            main_image="products/main/vc.png",
+            starting_price=Decimal("100.00"),
+            bid_increment=Decimal("10.00"),
+            auction_start=now - timedelta(hours=1),
+            auction_end=now + timedelta(hours=1),
+            status=Product.Status.LIVE,
+        )
+        self.url = reverse("products:detail", args=[self.product.slug])
+
+    def test_anonymous_visit_increments_counter(self):
+        self.client.get(self.url)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.view_count, 1)
+
+    def test_each_visit_counts_repeatedly(self):
+        self.client.get(self.url)
+        self.client.get(self.url)
+        self.client.get(self.url)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.view_count, 3)
+
+    def test_seller_viewing_own_lot_does_not_count(self):
+        self.client.force_login(self.seller)
+        self.client.get(self.url)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.view_count, 0)
+
+    def test_other_authenticated_visitor_counts(self):
+        self.client.force_login(self.visitor)
+        self.client.get(self.url)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.view_count, 1)
+
+    def test_detail_page_renders_current_view_count(self):
+        Product.objects.filter(pk=self.product.pk).update(view_count=6)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        # 6 before this visit + 1 for this visit, rendered back to the client.
+        self.assertContains(response, "7 views")
+
+    def test_list_page_renders_view_count_without_incrementing(self):
+        Product.objects.filter(pk=self.product.pk).update(view_count=5)
+        response = self.client.get(reverse("products:list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "5 views")
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.view_count, 5, "listing pages never count views")
+
+    def test_my_products_table_shows_views_column(self):
+        Product.objects.filter(pk=self.product.pk).update(view_count=9)
+        self.client.force_login(self.seller)
+        response = self.client.get(reverse("products:my_products"))
+        self.assertContains(response, "<th>Views</th>", html=False)
+        self.assertContains(response, '<i class="bi bi-eye"></i> 9</td>', html=False)

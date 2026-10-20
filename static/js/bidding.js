@@ -38,6 +38,15 @@
           }
           applyStatus(data);
           amountInput.value = data.minimum_next_bid;
+          if (data.extended) {
+            // Anti-sniping: restart the countdown from the extended deadline.
+            window.LotHouseAuction.showNotice(
+              `Your late bid extended this auction to ${new Date(
+                data.auction_end
+              ).toLocaleString()}.`,
+              "warning"
+            );
+          }
         })
         .catch(() => {
           errorBox.textContent = "Network error — please try again.";
@@ -58,22 +67,30 @@
     if (biddersCountEl && data.total_bidders !== undefined) biddersCountEl.textContent = data.total_bidders;
 
     // Keep the client countdown honest by re-syncing with the server clock.
-    const countdownEl = document.querySelector(".countdown-strip");
-    if (countdownEl && data.time_remaining_seconds > 0) {
-      countdownEl.dataset.countdown = data.time_remaining_seconds;
-    }
+    // This also picks up anti-sniping extensions without a page reload.
+    if (window.LotHouseAuction) window.LotHouseAuction.applyDeadline(data);
   }
 
   function pollStatus() {
     const container = document.getElementById("live-auction-panel");
     if (!container) return;
     const slug = container.dataset.slug;
+    let knownEnd = null;
 
     const interval = setInterval(() => {
       fetch(`/bids/${slug}/status/ajax/`)
         .then((res) => res.json())
         .then((data) => {
           applyStatus(data);
+          if (knownEnd && data.auction_end && data.auction_end !== knownEnd) {
+            window.LotHouseAuction.showNotice(
+              `This auction was extended to ${new Date(
+                data.auction_end
+              ).toLocaleString()} by a late bid.`,
+              "warning"
+            );
+          }
+          knownEnd = data.auction_end || knownEnd;
           if (data.status === "CLOSED") {
             clearInterval(interval);
             // Reload exactly once so we don't loop forever on a closed auction.

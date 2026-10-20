@@ -7,7 +7,7 @@ lifecycle status changes. The HTTP polling endpoints remain as a fallback.
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from .broadcast import serialize_auction, auction_group_name
+from .broadcast import auction_group_name, serialize_auction
 
 
 class AuctionConsumer(AsyncJsonWebsocketConsumer):

@@ -18,7 +18,7 @@
     </div>
 
     <div class="col-lg-6">
-      <span class="text-cream-dim small">LOT #{{ product.id }} &middot; {{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %}</span>
+      <span class="text-cream-dim small">LOT #{{ product.id }} &middot; {{ product.category.name }}{% if product.subcategory %} / {{ product.subcategory.name }}{% endif %} &middot; <i class="bi bi-eye"></i> {{ product.view_count }} view{{ product.view_count|pluralize }}</span>
       <h1 class="mt-1 mb-3">{{ product.title }}</h1>
 
       <div id="live-auction-panel" data-slug="{{ product.slug }}" class="card-panel p-4 mb-4">

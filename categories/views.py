@@ -1,8 +1,9 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from core.permissions import admin_required
+
 from .forms import CategoryForm, SubCategoryForm
 from .models import Category, SubCategory
 
@@ -21,7 +22,7 @@ def category_list(request):
 @admin_required
 def category_add(request):
     if request.method == "POST":
-        form = CategoryForm(request.POST)
+        form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Category created.")
@@ -35,7 +36,7 @@ def category_add(request):
 def category_edit(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == "POST":
-        form = CategoryForm(request.POST, instance=category)
+        form = CategoryForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             form.save()
             messages.success(request, "Category updated.")

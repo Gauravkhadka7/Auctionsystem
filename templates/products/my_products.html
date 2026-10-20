@@ -9,7 +9,7 @@
 
   <div class="table-responsive">
     <table class="table align-middle">
-      <thead><tr><th>Product</th><th>Status</th><th>Current Bid</th><th>Auction Window</th><th></th></tr></thead>
+      <thead><tr><th>Product</th><th>Status</th><th>Current Bid</th><th>Views</th><th>Auction Window</th><th></th></tr></thead>
       <tbody>
         {% for product in products %}
           <tr>
@@ -21,6 +21,7 @@
               {% else %}<span class="badge-status badge-closed">{{ product.get_status_display }}</span>{% endif %}
             </td>
             <td class="text-brass">{{ product.current_price }}</td>
+            <td class="small text-cream-dim"><i class="bi bi-eye"></i> {{ product.view_count }}</td>
             <td class="small text-cream-dim">{{ product.auction_start|date:"M d" }} &rarr; {{ product.auction_end|date:"M d" }}</td>
             <td class="text-end">
               {% if product.status != "LIVE" and product.status != "CLOSED" %}
@@ -30,7 +31,7 @@
             </td>
           </tr>
         {% empty %}
-          <tr><td colspan="5" class="text-cream-dim">You haven't listed anything yet.</td></tr>
+          <tr><td colspan="6" class="text-cream-dim">You haven't listed anything yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

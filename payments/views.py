@@ -1,8 +1,9 @@
 from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from core.permissions import bidder_required
 from winners.models import Winner
+
 from .forms import PaymentForm
 from .models import Payment
 
@@ -11,7 +12,7 @@ from .models import Payment
 def submit_payment(request, winner_id):
     winner = get_object_or_404(Winner, pk=winner_id, bidder=request.user)
     if request.method == "POST":
-        form = PaymentForm(request.POST, request.FILES)
+        form = PaymentForm(request.POST, request.FILES, winner=winner)
         if form.is_valid():
             payment = form.save(commit=False)
             payment.winner = winner
@@ -21,5 +22,5 @@ def submit_payment(request, winner_id):
             messages.success(request, "Payment submitted. An admin will verify it shortly.")
             return redirect("winners:detail", pk=winner.pk)
     else:
-        form = PaymentForm(initial={"amount": winner.winning_price})
+        form = PaymentForm(winner=winner, initial={"amount": winner.winning_price})
     return render(request, "payments/submit_payment.html", {"form": form, "winner": winner})

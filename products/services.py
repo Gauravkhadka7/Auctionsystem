@@ -8,7 +8,8 @@ touch prices or declare winners.
 """
 from django.db import transaction
 
-from notifications.models import Notification
+from notifications.broadcast import notify
+
 from .models import Product
 
 
@@ -48,9 +49,9 @@ def approve_product(product):
     product.status = Product.Status.UPCOMING
     product.admin_remarks = ""
     product.save(update_fields=["status", "admin_remarks"])
-    Notification.objects.create(
-        user=product.seller,
-        message=f'Your listing "{product.title}" was approved and is scheduled to go live.',
+    notify(
+        product.seller,
+        f'Your listing "{product.title}" was approved and is now scheduled.',
         link=product.get_absolute_url(),
     )
     return product
@@ -64,9 +65,9 @@ def reject_product(product, reason=""):
     product.status = Product.Status.REJECTED
     product.admin_remarks = reason or "Rejected by an administrator."
     product.save(update_fields=["status", "admin_remarks"])
-    Notification.objects.create(
-        user=product.seller,
-        message=f'Your listing "{product.title}" was rejected. {product.admin_remarks}',
+    notify(
+        product.seller,
+        f'Your listing "{product.title}" was rejected. {product.admin_remarks}',
         link=product.get_absolute_url(),
     )
     return product

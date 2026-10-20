@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 
 from core.permissions import bidder_required
 from products.models import Product
+
 from .models import WatchlistItem
 
 

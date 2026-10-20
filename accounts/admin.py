@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Profile, EmailOTP
+from .models import EmailOTP, Profile, User
 
 
 class ProfileInline(admin.StackedInline):

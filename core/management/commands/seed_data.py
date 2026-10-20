@@ -5,11 +5,10 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from accounts.models import User, Profile
+from accounts.models import Profile, User
+from bids.models import Bid
 from categories.models import Category, SubCategory
 from products.models import Product, ProductSpecification
-from bids.models import Bid
-
 
 # 1x1 transparent PNG, used as a lightweight placeholder image so ImageField
 # validation passes without needing real product photography.
@@ -31,8 +30,12 @@ class Command(BaseCommand):
             "Vehicles": ["Motorbikes", "Bicycles"],
         }
         categories = {}
-        for name, subs in categories_data.items():
+        for idx, (name, subs) in enumerate(categories_data.items()):
             cat, _ = Category.objects.get_or_create(name=name)
+            if not cat.image:
+                # Reuse the same lightweight placeholder so the category cards
+                # on the home page have imagery without shipping binary assets.
+                cat.image.save(f"category_{idx}.png", ContentFile(PLACEHOLDER_PNG), save=True)
             categories[name] = cat
             for sub in subs:
                 SubCategory.objects.get_or_create(category=cat, name=sub)
@@ -119,11 +122,13 @@ class Command(BaseCommand):
             product.main_image.save(f"placeholder_{idx}.png", ContentFile(PLACEHOLDER_PNG), save=False)
             product.save()
 
-            ProductSpecification.objects.create(product=product, name="Condition", value=product.get_condition_display())
+            ProductSpecification.objects.create(
+                product=product, name="Condition", value=product.get_condition_display()
+            )
 
             if status in (Product.Status.LIVE, Product.Status.CLOSED):
                 current = price
-                for b in range(random.randint(2, 5)):
+                for _ in range(random.randint(2, 5)):
                     bidder = random.choice(bidders)
                     current += increment * random.randint(1, 3)
                     Bid.objects.create(product=product, bidder=bidder, amount=current)

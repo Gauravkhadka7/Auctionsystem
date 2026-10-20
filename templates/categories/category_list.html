@@ -12,11 +12,18 @@
   <form method="get" class="mb-3"><input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search categories..." style="max-width:320px;"></form>
   <div class="table-responsive">
     <table class="table align-middle">
-      <thead><tr><th>Name</th><th>Subcategories</th><th>Active</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Image</th><th>Subcategories</th><th>Active</th><th></th></tr></thead>
       <tbody>
       {% for cat in page_obj %}
         <tr>
           <td>{{ cat.name }}</td>
+          <td>
+            {% if cat.image %}
+              <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="rounded" width="56" height="40" style="object-fit:cover;">
+            {% else %}
+              <span class="text-cream-dim small"><i class="bi {{ cat.icon|default:'bi-grid' }}"></i> No image</span>
+            {% endif %}
+          </td>
           <td class="text-cream-dim small">{% for s in cat.subcategories.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
           <td>{% if cat.is_active %}<span class="badge-status badge-success">Active</span>{% else %}<span class="badge-status badge-closed">Inactive</span>{% endif %}</td>
           <td class="text-end">
@@ -24,7 +31,7 @@
             <a href="{% url 'categories:delete' cat.pk %}" class="btn btn-sm btn-outline-cream" onclick="return confirm('Delete this category?');">Delete</a>
           </td>
         </tr>
-      {% empty %}<tr><td colspan="4" class="text-cream-dim">No categories yet.</td></tr>{% endfor %}
+      {% empty %}<tr><td colspan="5" class="text-cream-dim">No categories yet.</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>

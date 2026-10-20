@@ -240,7 +240,11 @@ def get_recent_activity(limit=12, per_source=6):
             "ts": payment.created_at,
             "kind": "payment",
             "icon": "bi-credit-card",
-            "text": f'{payment.payer.username} submitted a {payment.get_status_display()} payment for "{payment.winner.product.title}"',
+            "text": (
+                f"{payment.payer.username} submitted a "
+                f'{payment.get_status_display()} payment for '
+                f'"{payment.winner.product.title}"'
+            ),
             "url": reverse("dashboard:payment_detail", args=[payment.pk]),
         })
 

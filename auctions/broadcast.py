@@ -25,6 +25,10 @@ def serialize_auction(product, event):
         "total_bids": product.total_bids,
         "total_bidders": product.total_bidders,
         "time_remaining_seconds": product.time_remaining_seconds,
+        # Anti-sniping: the authoritative (possibly extended) deadline, ISO-8601
+        # in UTC so clients can re-derive the countdown without a page reload.
+        "auction_end": product.auction_end.isoformat(),
+        "extension_count": product.extension_count,
         "leader": leader.bidder.username if leader else None,
     }
 

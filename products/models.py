@@ -66,6 +66,10 @@ class Product(models.Model):
         default=0,
         help_text="Times auction_end was pushed back by a last-second bid.",
     )
+    ending_soon_notified = models.BooleanField(
+        default=False,
+        help_text="Internal flag: the 'ending soon' reminder already fired for this auction window.",
+    )
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

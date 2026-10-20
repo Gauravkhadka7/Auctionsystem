@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Product, ProductImage, ProductSpecification, Comment
+
+from .models import Comment, Product, ProductImage, ProductSpecification
 
 
 class ProductImageInline(admin.TabularInline):
@@ -14,7 +15,16 @@ class ProductSpecificationInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("title", "seller", "category", "status", "current_price", "auction_start", "auction_end", "is_featured")
+    list_display = (
+        "title",
+        "seller",
+        "category",
+        "status",
+        "current_price",
+        "auction_start",
+        "auction_end",
+        "is_featured",
+    )
     list_filter = ("status", "category", "is_featured", "condition")
     search_fields = ("title", "seller__username", "seller__email")
     inlines = [ProductImageInline, ProductSpecificationInline]

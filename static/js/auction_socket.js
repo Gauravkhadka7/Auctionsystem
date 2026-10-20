@@ -27,9 +27,14 @@
     if (bidsEl && data.total_bids != null) bidsEl.textContent = data.total_bids;
     if (biddersEl && data.total_bidders != null) biddersEl.textContent = data.total_bidders;
 
-    const countdownEl = document.querySelector(".countdown-strip");
-    if (countdownEl && data.time_remaining_seconds > 0) {
-      countdownEl.dataset.countdown = data.time_remaining_seconds;
+    // Re-sync the countdown against the server deadline — this is what makes
+    // an anti-sniping extension visible without reloading the page.
+    if (window.LotHouseAuction) {
+      window.LotHouseAuction.applyDeadline(data);
+      const notice = window.LotHouseAuction.describeEvent(data);
+      if (notice && data.event !== "snapshot") {
+        window.LotHouseAuction.showNotice(notice.message, notice.variant);
+      }
     }
 
     if (data.status === "CLOSED") {

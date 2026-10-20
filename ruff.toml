@@ -1,0 +1,18 @@
+target-version = "py312"
+line-length = 120
+
+exclude = [
+    "migrations",
+    ".venv",
+    "venv",
+]
+
+[lint]
+# E/W: pycodestyle, F: pyflakes, I: import sorting, B: bugbear, C4: comprehensions,
+# UP: pyupgrade. Migrations are excluded so generated files stay untouched.
+select = ["E", "F", "W", "I", "B", "C4", "UP"]
+
+[lint.per-file-ignores]
+# Settings and tests routinely import late / use star-shaped fixtures.
+"auction_system/settings.py" = ["E402"]
+"*/tests.py" = ["E402", "N802"]

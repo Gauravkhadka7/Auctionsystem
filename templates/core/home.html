@@ -40,9 +40,20 @@
 <div class="container py-5">
 
   {% if categories %}
-  <div class="d-flex flex-wrap gap-2 mb-5">
+  <div class="row g-3 mb-5">
     {% for cat in categories %}
-      <a href="{% url 'products:list' %}?category={{ cat.slug }}" class="btn btn-outline-cream btn-sm">{{ cat.name }}</a>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="{% url 'products:list' %}?category={{ cat.slug }}" class="category-card">
+          <span class="category-card-media">
+            {% if cat.image %}
+              <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+            {% else %}
+              <i class="bi {{ cat.icon|default:'bi-grid' }}" aria-hidden="true"></i>
+            {% endif %}
+          </span>
+          <span class="category-card-name">{{ cat.name }}</span>
+        </a>
+      </div>
     {% endfor %}
   </div>
   {% endif %}

@@ -1,4 +1,5 @@
 import re
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -7,7 +8,6 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from unittest import mock
 
 from .models import EmailOTP
 from .tokens import email_verification_token
@@ -364,7 +364,7 @@ class RoleRestrictionTests(TestCase):
         )
 
     def test_unverified_seller_cannot_use_seller_features(self):
-        seller = User.objects.create_user(
+        User.objects.create_user(
             username="s2", email="s2@example.com", password="Pass@12345",
             role=User.Role.SELLER, is_email_verified=False,
         )
@@ -374,7 +374,7 @@ class RoleRestrictionTests(TestCase):
         self.assertNotIn("_auth_user_id", self.client.session)
 
     def test_admin_role_user_requires_verification_unless_staff(self):
-        admin_role = User.objects.create_user(
+        User.objects.create_user(
             username="boss", email="boss@example.com", password="Pass@12345",
             role=User.Role.ADMIN, is_email_verified=False,
         )

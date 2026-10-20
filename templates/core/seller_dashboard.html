@@ -13,6 +13,81 @@
     <div class="col-6 col-md-2"><div class="stat-tile"><div class="stat-value">{{ closed_count }}</div><div class="stat-label">Closed</div></div></div>
     <div class="col-6 col-md-2"><div class="stat-tile"><div class="stat-value">{{ pending_count }}</div><div class="stat-label">Pending Approval</div></div></div>
   </div>
+
+  <div class="section-heading">
+    <div><div class="eyebrow">Performance</div><h2>Seller Analytics</h2></div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-tile"><div class="stat-value">{{ analytics.total_bids }}</div><div class="stat-label">Bids received</div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile"><div class="stat-value">{{ analytics.total_views }}</div><div class="stat-label">Listing views</div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile"><div class="stat-value">{{ analytics.verified_revenue }}</div><div class="stat-label">Verified revenue</div></div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-tile"><div class="stat-value">{{ analytics.settled_count }}</div><div class="stat-label">Settled lots</div></div>
+    </div>
+  </div>
+
+  <p class="text-cream-dim small mb-4">
+    Verified revenue sums admin-verified payments on your lots ({{ analytics.pending_revenue }}
+    more still awaiting verification). Settled hammer value
+    ({{ analytics.settled_winning_value }}) covers the same lots and is not added to it.
+  </p>
+
+  {% if analytics.category_rows %}
+  <div class="row g-4 mb-5">
+    <div class="col-lg-6">
+      <div class="card-panel p-4 h-100">
+        <h5 class="mb-3">Bids by category</h5>
+        <table class="table analytics-breakdown mb-0">
+          <thead><tr><th>Category</th><th style="width:35%;">Share</th><th class="text-end">Bids</th></tr></thead>
+          <tbody>
+          {% for row in analytics.category_rows %}
+            <tr>
+              <td>
+                {% if row.category.image %}<img src="{{ row.category.image.url }}" alt="" class="rounded-circle me-2" width="22" height="22" style="object-fit:cover;">{% endif %}
+                {{ row.category.name }}
+              </td>
+              <td><div class="analytics-bar"><span style="width: {{ row.bids_pct }}%;"></span></div></td>
+              <td class="text-end text-brass">{{ row.bids }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-panel p-4 h-100">
+        <h5 class="mb-3">Verified revenue by category</h5>
+        <table class="table analytics-breakdown mb-0">
+          <thead><tr><th>Category</th><th style="width:35%;">Share</th><th class="text-end">Revenue</th></tr></thead>
+          <tbody>
+          {% for row in analytics.category_rows %}
+            <tr>
+              <td>
+                {% if row.category.image %}<img src="{{ row.category.image.url }}" alt="" class="rounded-circle me-2" width="22" height="22" style="object-fit:cover;">{% endif %}
+                {{ row.category.name }}
+              </td>
+              <td><div class="analytics-bar"><span style="width: {{ row.revenue_pct }}%;"></span></div></td>
+              <td class="text-end text-brass">{{ row.revenue }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="text-cream-dim">No verified payments yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="text-cream-dim small mb-5">No listings yet — analytics appear once you publish your first auction.</p>
+  {% endif %}
+
   <h5 class="mb-3">Recent Listings</h5>
   <div class="row g-4">
     {% for product in recent_products %}

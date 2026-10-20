@@ -567,3 +567,69 @@ a:focus-visible,
   .nav-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; }
   .nav-tabs .nav-link { white-space: nowrap; }
 }
+
+/* ---------------- Category browsing ---------------- */
+.category-card {
+  display: block;
+  height: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.category-card:hover,
+.category-card:focus-visible {
+  border-color: var(--color-accent);
+  color: inherit;
+  transform: translateY(-2px);
+}
+.category-card-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--color-accent);
+  font-size: 2rem;
+}
+.category-card-media img { width: 100%; height: 100%; object-fit: cover; }
+.category-card-name {
+  display: block;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem 0.3rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.category-chip img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.category-chip i { font-size: 0.95rem; color: var(--color-accent-ink); }
+.category-chip:hover,
+.category-chip:focus-visible { border-color: var(--color-accent); color: var(--color-primary); }
+.category-chip.is-active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.category-chip.is-active i { color: var(--color-accent); }
+
+/* ---------------- Seller analytics ---------------- */
+.analytics-breakdown { width: 100%; }
+.analytics-breakdown th { font-weight: 600; color: var(--color-muted-strong); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.analytics-breakdown td { vertical-align: middle; }
+.analytics-bar { height: 6px; min-width: 60px; border-radius: 999px; background: var(--color-surface-sunken); overflow: hidden; }
+.analytics-bar > span { display: block; height: 100%; background: var(--color-accent); }

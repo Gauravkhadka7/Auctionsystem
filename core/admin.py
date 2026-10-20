@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import SiteContact, NewsletterSubscriber
+
+from .models import NewsletterSubscriber, SiteContact
 
 
 @admin.register(SiteContact)

@@ -1,15 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import F, Q
+from django.shortcuts import get_object_or_404, redirect, render
 
-from bids.models import Bid
 from categories.models import Category
 from core.permissions import seller_required
+
 from . import services
-from .forms import ProductForm, ProductImageFormSet, ProductSpecificationFormSet, CommentForm
-from .models import Product, Comment
+from .forms import CommentForm, ProductForm, ProductImageFormSet, ProductSpecificationFormSet
+from .models import Comment, Product
 
 
 def product_list(request):
@@ -52,6 +52,17 @@ def product_detail(request, slug):
     product = get_object_or_404(
         Product.objects.select_related("category", "subcategory", "seller"), slug=slug
     )
+
+    # Atomic view counter: F() increments in the database rather than
+    # read-modify-save, so concurrent visitors can't lose counts.
+    # Excluded: the listing's own seller (reviewing your own lot isn't a view).
+    qualifies = not (
+        request.user.is_authenticated and request.user.pk == product.seller_id
+    )
+    if qualifies:
+        Product.objects.filter(pk=product.pk).update(view_count=F("view_count") + 1)
+        product.refresh_from_db(fields=["view_count"])
+
     bid_history = product.bids.select_related("bidder").order_by("-amount")[:20]
     comments = product.comments.select_related("user")
     comment_form = CommentForm()
